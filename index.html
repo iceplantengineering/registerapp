@@ -1,349 +1,923 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>レジ実務・片手ナビ (研修No.1-150)</title>
-    <style>
-        :root {
-            --primary: #2c3e50; --bg: #f0f3f5; --card: #ffffff;
-            --regi: #3498db; --jmups: #f39c12; --paypay: #ff0033;
-            --text-main: #333; --text-sub: #7f8c8d;
-            --nav-bg: #ffffff;
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text-main); padding-bottom: 70px; /* ナビ用余白 */ overflow-x: hidden; }
-        
-        /* ヘッダー */
-        .header { background: var(--card); padding: 15px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 90; }
-        .header h1 { margin: 0; font-size: 17px; font-weight: bold; color: var(--primary); }
-        .header p { margin: 3px 0 0; font-size: 11px; color: var(--text-sub); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>レジ研修ナビ 完全版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0d1520;
+  --bg2:      #111d2e;
+  --card:     #162032;
+  --card2:    #1c2a40;
+  --border:   #253650;
+  --text:     #c8d8e8;
+  --text2:    #7a94b0;
+  --text3:    #4a6480;
+  --amber:    #f0a500;
+  --amber2:   #ffc340;
+  --blue:     #3b82f6;
+  --blue2:    #60a5fa;
+  --red:      #ef4444;
+  --red2:     #f87171;
+  --green:    #10b981;
+  --green2:   #34d399;
+  --nav-h:    56px;
+  --nav-bot:  66px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);padding-bottom:calc(var(--nav-bot) + 20px);min-height:100vh;}
 
-        /* コンテンツエリア */
-        .container { padding: 10px; }
+/* ─── HEADER ─── */
+.header{
+  background:linear-gradient(135deg,#0a1628 0%,#162032 100%);
+  border-bottom:1px solid var(--border);
+  padding:0 16px;
+  height:var(--nav-h);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 20px rgba(0,0,0,0.4);
+}
+.header-left{display:flex;align-items:center;gap:10px;}
+.header-logo{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:1px;opacity:.8;}
+#head-title{font-size:15px;font-weight:700;color:var(--text);}
+.progress-pill{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:var(--card2);border:1px solid var(--border);
+  padding:4px 10px;border-radius:20px;color:var(--amber);
+  white-space:nowrap;
+}
 
-        /* 検索バー（上部固定だが、ナビで呼び出し） */
-        #search-container { display: none; padding: 10px; background: var(--bg); position: sticky; top: 55px; z-index: 80; }
-        #search { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 25px; box-sizing: border-box; font-size: 16px; outline: none; }
+/* ─── VIEWS ─── */
+.view{display:none;padding:12px;}
+.view.active{display:block;}
 
-        /* カテゴリパネル（ホーム画面） */
-        #home-menu { display: grid; grid-template-columns: 1fr; gap: 10px; padding-top: 10px; }
-        .menu-btn { background: var(--card); border: 1px solid #ddd; border-radius: 12px; padding: 20px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .menu-btn:active { background: #f8f9fa; transform: scale(0.98); }
-        .menu-btn-text { font-size: 16px; font-weight: bold; color: var(--primary); }
-        .menu-btn-icon { color: #ccc; font-size: 18px; }
+/* ─── SEARCH ─── */
+.search-wrap{position:relative;margin-bottom:12px;}
+.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;}
+#search-input{
+  width:100%;padding:12px 12px 12px 40px;
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-size:15px;font-family:'Noto Sans JP',sans-serif;
+  outline:none;transition:border .2s;
+}
+#search-input:focus{border-color:var(--amber);}
+#search-input::placeholder{color:var(--text3);}
 
-        /* アイテムリスト（詳細画面） */
-        #list-view { display: none; }
-        .item-card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .item-header { border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
-        .item-no { font-size: 11px; color: var(--text-sub); font-weight: bold; }
-        .item-title { font-size: 15px; font-weight: bold; color: var(--primary); margin: 3px 0 0; }
+/* ─── CATEGORY CARDS ─── */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:360px){.cat-grid{grid-template-columns:1fr;}}
+.cat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:16px 14px;cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;gap:8px;
+  position:relative;overflow:hidden;
+}
+.cat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--cat-color,var(--amber));border-radius:14px 14px 0 0;
+}
+.cat-card:active{transform:scale(.97);background:var(--card2);}
+.cat-icon{font-size:22px;line-height:1;}
+.cat-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;}
+.cat-sub{font-size:10px;color:var(--text3);}
+.cat-meta{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
+.cat-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);}
+.cat-prog-bar{height:3px;background:var(--bg2);border-radius:2px;margin-top:4px;}
+.cat-prog-fill{height:100%;border-radius:2px;background:var(--cat-color,var(--amber));transition:width .3s;}
 
-        /* 手順の詳細表現（第1画面の良さを踏襲） */
-        .step { display: flex; align-items: flex-start; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #f0f0f0; }
-        .step:last-child { border-bottom: none; margin-bottom: 0; }
-        .step-num { background: var(--primary); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; margin-right: 10px; flex-shrink: 0; margin-top: 2px; }
-        
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; margin-bottom: 4px; }
-        .b-r { background: var(--regi); } .b-j { background: var(--jmups); } .b-p { background: var(--paypay); }
-        .step-msg { font-size: 14px; line-height: 1.5; flex: 1; }
+/* ─── LIST ─── */
+.list-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.list-header-icon{font-size:20px;}
+.list-header-title{font-size:14px;font-weight:700;}
+.list-header-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);}
 
-        .note-box { background: #fff9c4; border-left: 4px solid #fbc02d; padding: 10px; border-radius: 4px; font-size: 12px; margin-top: 10px; color: #555; }
+.item-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  margin-bottom:8px;display:flex;align-items:center;gap:12px;padding:13px 14px;
+  cursor:pointer;transition:all .15s;position:relative;
+}
+.item-card:active{transform:scale(.98);background:var(--card2);}
+.item-done{opacity:.45;}
+.item-done .item-text{text-decoration:line-through;}
+.item-no{
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  min-width:36px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg2);color:var(--text2);border:1px solid var(--border);
+  flex-shrink:0;
+}
+.item-text{font-size:13.5px;flex:1;line-height:1.3;}
+.item-chk{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.item-chk.done{background:var(--green);border-color:var(--green);}
+.item-chk.done::after{content:'✓';font-size:11px;color:white;font-weight:700;}
+.item-arrow{color:var(--text3);font-size:12px;flex-shrink:0;}
 
-        /* 下部ナビゲーション（片手操作の中核） */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { text-align: center; color: var(--text-sub); flex: 1; padding: 10px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; font-style: normal; display: block; }
-        .nav-text { font-size: 10px; display: block; font-weight: bold; }
+/* ─── DETAIL ─── */
+.det-header{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.det-no{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);margin-bottom:6px;letter-spacing:1px;}
+.det-title{font-size:20px;font-weight:700;line-height:1.3;}
 
-    </style>
+.steps-container{display:flex;flex-direction:column;gap:2px;margin-bottom:20px;}
+.step-item{
+  display:flex;gap:12px;padding:14px;
+  background:var(--card);border:1px solid var(--border);
+  position:relative;
+}
+.step-item:first-child{border-radius:12px 12px 0 0;}
+.step-item:last-child{border-radius:0 0 12px 12px;}
+.step-item:only-child{border-radius:12px;}
+.step-connector{
+  position:absolute;left:34px;bottom:-2px;width:2px;height:4px;
+  background:var(--border);z-index:1;
+}
+.step-item:last-child .step-connector{display:none;}
+.step-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--bg2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);
+  flex-shrink:0;margin-top:1px;
+}
+.step-body{flex:1;}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;
+  margin-bottom:6px;letter-spacing:.5px;
+}
+.b-R{background:rgba(59,130,246,.15);color:var(--blue2);border:1px solid rgba(59,130,246,.3);}
+.b-J{background:rgba(240,165,0,.12);color:var(--amber2);border:1px solid rgba(240,165,0,.25);}
+.b-P{background:rgba(239,68,68,.12);color:var(--red2);border:1px solid rgba(239,68,68,.25);}
+.step-text{font-size:13.5px;line-height:1.6;color:var(--text);}
+.step-arrow{
+  display:inline-flex;align-items:center;gap:3px;
+  color:var(--text2);font-size:12px;
+}
+.step-arrow span{color:var(--amber);font-weight:700;}
+
+.note-box{
+  background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);
+  border-radius:10px;padding:14px;
+}
+.note-label{font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+.note-text{font-size:12.5px;line-height:1.7;color:var(--text2);}
+
+.det-nav{display:flex;gap:8px;margin-top:20px;}
+.det-nav-btn{
+  flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);
+  background:var(--card);color:var(--text2);font-size:13px;cursor:pointer;
+  text-align:center;transition:all .15s;font-family:'Noto Sans JP',sans-serif;
+}
+.det-nav-btn:active{background:var(--card2);}
+.det-check-btn{
+  width:100%;margin-top:12px;padding:14px;border-radius:10px;border:none;
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;
+  font-family:'Noto Sans JP',sans-serif;
+}
+.det-check-btn.undone{background:rgba(16,185,129,.1);color:var(--green2);border:1px solid rgba(16,185,129,.3);}
+.det-check-btn.done{background:rgba(16,185,129,.25);color:var(--green2);border:1px solid var(--green);}
+
+/* ─── NAV BAR ─── */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  height:var(--nav-bot);
+  background:rgba(13,21,32,.95);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(10px);
+  display:flex;z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;font-size:10px;color:var(--text3);cursor:pointer;transition:color .15s;
+  border:none;background:none;font-family:'Noto Sans JP',sans-serif;padding:0;
+}
+.nav-btn.active{color:var(--amber);}
+.nav-btn svg{transition:transform .15s;}
+.nav-btn:active svg{transform:scale(.85);}
+
+/* ─── PROGRESS CARD ─── */
+.progress-card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:16px;margin-bottom:12px;
+}
+.progress-title{font-size:12px;color:var(--text2);margin-bottom:10px;display:flex;justify-content:space-between;}
+.progress-title span{font-family:'JetBrains Mono',monospace;color:var(--amber);}
+.progress-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--green2));transition:width .5s;}
+
+/* ─── SECTION HEADER ─── */
+.section-hd{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 8px;}
+
+/* ─── EMPTY STATE ─── */
+.empty{text-align:center;padding:60px 20px;color:var(--text3);}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-text{font-size:14px;}
+
+/* ─── BADGE DOTS IN LIST ─── */
+.op-tags{display:flex;gap:3px;margin-left:auto;margin-right:6px;}
+.op-dot{width:6px;height:6px;border-radius:50%;}
+.op-dot.R{background:var(--blue);}
+.op-dot.J{background:var(--amber);}
+.op-dot.P{background:var(--red);}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ─── FADE IN ─── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.view.active{animation:fadeIn .18s ease-out;}
+</style>
 </head>
 <body>
 
 <div class="header">
-    <h1>レジ操作実務ナビ</h1>
-    <p>全150研修項目・J-Mups対応完全版</p>
+  <div class="header-left">
+    <div class="header-logo">REG</div>
+    <div id="head-title">レジ研修ナビ</div>
+  </div>
+  <div class="progress-pill" id="total-prog">0 / 0</div>
 </div>
 
-<div id="search-container">
-    <input type="text" id="search" placeholder="No.やキーワードで検索..." onkeyup="handleSearch()">
+<div id="view-home" class="view active"></div>
+<div id="view-list" class="view">
+  <div class="list-header">
+    <span class="list-header-icon" id="list-icon"></span>
+    <span class="list-header-title" id="list-title"></span>
+    <span class="list-header-count" id="list-count"></span>
+  </div>
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="No. またはキーワードで検索">
+  </div>
+  <div id="list-body"></div>
+</div>
+<div id="view-det" class="view">
+  <div id="det-body"></div>
 </div>
 
-<div class="container">
-    <div id="home-menu">
-        <button class="menu-btn" onclick="showCategory('opening')">
-            <span class="menu-btn-text">☀️ 開局・閉局</span>
-            <span class="menu-btn-icon">▶</span>
-        </button>
-        <button class="menu-btn" onclick="showCategory('registration')">
-            <span class="menu-btn-text">🍎 商品登録・訂正</span>
-            <span class="menu-btn-icon">▶</span>
-        </button>
-        <button class="menu-btn" onclick="showCategory('payment')">
-            <span class="menu-btn-text">💳 会計・キャッシュレス</span>
-            <span class="menu-btn-icon">▶</span>
-        </button>
-        <button class="menu-btn" onclick="showCategory('return')">
-            <span class="menu-btn-text">🔄 返品・返金対応 (詳細)</span>
-            <span class="menu-btn-icon">▶</span>
-        </button>
-        <button class="menu-btn" onclick="showCategory('closing')">
-            <span class="menu-btn-text">🌙 点検・締め・その他</span>
-            <span class="menu-btn-icon">▶</span>
-        </button>
-    </div>
-
-    <div id="list-view">
-        <div id="list-content">
-            </div>
-    </div>
-</div>
-
-<div class="bottom-nav">
-    <div class="nav-item active" id="nav-home" onclick="goHome()">
-        <i class="nav-icon">🏠</i>
-        <span class="nav-text">ホーム</span>
-    </div>
-    <div class="nav-item" id="nav-return" onclick="showCategory('return')">
-        <i class="nav-icon">🔄</i>
-        <span class="nav-text">返品操作</span>
-    </div>
-    <div class="nav-item" id="nav-search" onclick="toggleSearch()">
-        <i class="nav-icon">🔍</i>
-        <span class="nav-text">検索</span>
-    </div>
-</div>
+<nav class="nav-bar">
+  <button class="nav-btn active" id="nav-home" onclick="renderHome()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    ホーム
+  </button>
+  <button class="nav-btn" id="nav-search" onclick="showGlobalSearch()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    検索
+  </button>
+  <button class="nav-btn" id="nav-back" onclick="goBack()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    戻る
+  </button>
+  <button class="nav-btn" id="nav-prog" onclick="showProgress()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    進捗
+  </button>
+</nav>
 
 <script>
-// PDF全150項目のエッセンスを詳細に再現したデータベース
-const db = {
-    // ☀️ 開局・閉局
-    opening: [
-        { no: 11, name: "自動開局(J-Mups端末)", steps: [
-            {t:"J", m:"画面が【POS連動中】であることを確認"},
-            {t:"J", m:"通信中表示中にレジ操作は絶対にしない（データ破損防止）"},
-            {t:"J", m:"【あり】だった場合の対応、釣銭入金時は端末画面を確認"}
-        ], note: "開局前に実施。日計票の出力有無を確認。" },
-        { no: 14, name: "レジ開局操作", steps: [
-            {t:"R", m:"レジキーを【R】へ回す"},
-            {t:"R", m:"L責任者No.を入力"},
-            {t:"R", m:"社員IDをスキャン"}
-        ], note: "正面レジは各フロア1本、コーナーレジは各レジ1本のキーを保管。" },
-        { no: 16, name: "レジ閉局操作", steps: [
-            {t:"R", m:"レジキーを【R】へ回す"},
-            {t:"R", m:"【閉局操作】を実行"}
-        ], note: "レジ離脱時は必ず実施。トレーニングモードも閉局してから行う。" }
-    ],
-    // 🍎 商品登録・訂正
-    registration: [
-        { no: 22, name: "年齢確認(酒・煙草)", steps: [
-            {t:"R", m:"商品をスキャン"},
-            {t:"R", m:"ディスプレイに年齢確認画面が表示"},
-            {t:"P", m:"お客様自身が画面の【OK】または【NG】を選択"},
-            {t:"R", m:"OKなら登録継続、NGなら販売不可"}
-        ], note: "酒・煙草販売時は必須。お客様に触れていただくこと。" },
-        { no: 33, name: "自動値引き(50円/30円シール)", steps: [
-            {t:"R", m:"商品登録（バーコードスキャン）"},
-            {t:"R", m:"画面下の【値引】ボタン(50円 or 30円)を押下"}
-        ], note: "自動値引きシール対応品のみ。" },
-        { no: 41, name: "指定取消(過去の登録)", steps: [
-            {t:"R", m:"登録済みリストから対象商品をタッチ"},
-            {t:"R", m:"【指定取消】ボタンを押下"}
-        ], note: "直前の商品だけでなく、過去に登録した特定の商品を消去可能。" },
-        { no: 43, name: "画面訂正(掛算登録)", steps: [
-            {t:"R", m:"画面の対象商品をタッチ"},
-            {t:"R", m:"【画面訂正】ボタンを押下"}
-        ], note: "掛算登録の場合、タッチした行の個数が全て取り消されるので注意。" }
-    ],
-    // 💳 会計・キャッシュレス
-    payment: [
-        { no: 87, name: "クレジット一括(磁気カード)", steps: [
-            {t:"R", m:"小計 → 【クレジット】ボタン押下"},
-            {t:"J", m:"端末画面確認後、カードをスリット"},
-            {t:"J", m:"【一括】 → 【確認】"},
-            {t:"J", m:"端末レシート出力後、レジレシートが出力"}
-        ], note: "10,001円以上はサイン必須。レジレシートは最後に出る。" },
-        { no: 92, name: "クレジット一括(ICカード)", steps: [
-            {t:"R", m:"小計 → 【クレジット】ボタン押下"},
-            {t:"J", m:"端末にICカードを挿入"},
-            {t:"J", m:"【一括】 → お客様が暗証番号入力 → 【確定】"},
-            {t:"J", m:"暗証番号不明時は【確定】ボタン押下でサイン対応へ"}
-        ], note: "暗証番号入力中は画面を見ないように配慮。" },
-        { no: 102, name: "PayPay決済", steps: [
-            {t:"P", m:"客：アプリ起動 → QRスキャン → お支払額入力 → 支払う"},
-            {t:"R", m:"小計 → 【PayPay】ボタン → レジとスマホの金額一致を確認"},
-            {t:"R", m:"決済完了音と画面の【決済完了】を確認"}
-        ], note: "お支払額は合計金額(税込)を入力して頂く。レジと一致を必ず確認。" }
-    ],
-    // 🔄 返品・返金対応 (第1画面の詳細さを再現)
-    return: [
-        { no: 116, name: "全返品(現金・一般)", steps: [
-            {t:"R", m:"【返品】 → 返品理由タッチ"},
-            {t:"R", m:"元レシートをスキャン"},
-            {t:"R", m:"【2(全返品)】 → 金額確認 → 【OK】 → 【小計】"},
-            {t:"R", m:"返金レシート出力 → ページ切替 → 【明細書】 → 返金レシートスキャン"},
-            {t:"R", m:"店舗用明細書を発行"}
-        ], note: "全額返金。レジ画面の金額と元レシートが一致しているか確認。" },
-        { no: 121, name: "取替(安い→高い商品へ)", steps: [
-            {t:"R", m:"【返品】 → 理由タッチ → レシートスキャン → 【OK】"},
-            {t:"R", m:"返品商品をタッチ → 【画面訂正】 → 【小計】"},
-            {t:"R", m:"取替商品をスキャン → 【預/金額】"}
-        ], note: "差額を頂く対応。" },
-        { no: 127, name: "レシートなし返品(99返品)", steps: [
-            {t:"R", m:"【返品】 → 理由タッチ → JAN【9999999】入力"},
-            {t:"R", m:"【小計】 → 返品商品をスキャン → 【預/現金】"}
-        ], note: "販売実績を調べてから行う。レシート代用伝票を使用。明細書の裏に元レジNo・日付等を記入。" },
-        { no: 129, name: "カード全返品(磁気)", steps: [
-            {t:"R", m:"【カード返品】 → 理由タッチ → レシートスキャン"},
-            {t:"R", m:"【2】 → 金額確認 → 【OK】"},
-            {t:"J", m:"端末画面確認後、カードをスリット"},
-            {t:"J", m:"伝票番号(J伝票No)入力 → 【次へ】 → 商品コード入力 → 【確認】"},
-            {t:"J", m:"端末レシート出力 → 金額一致を確認"}
-        ], note: "J-Mups側のレシートとレジ画面の金額が一致しているか必ず確認。" },
-        { no: 133, name: "カード一部返品(IC)", steps: [
-            {t:"R", m:"【カード返品】 → 理由タッチ → レシートスキャン → 金額 → 【OK】"},
-            {t:"R", m:"【明細書】発行 → 店舗用とする"},
-            {t:"J", m:"端末にICカードを挿入 → 伝票番号入力 → 商品コード入力"},
-            {t:"J", m:"支払方法【確認】 → レシート出力"},
-            {t:"R", m:"お客様の希望する会計方法で再度会計する"}
-        ], note: "ICカードは端末側で一部返品処理を行う。" },
-        { no: 136, name: "PayPay返金(ダッシュボード併用)", steps: [
-            {t:"P", m:"タブレット等でPayPayダッシュボードサイトを開く"},
-            {t:"P", m:"対象取引を探す → 【返金する】実行 → 【返金完了】確認"},
-            {t:"R", m:"レジ側：【カード返品】操作（全返品/一部返品）を行う"}
-        ], note: "ダッシュボードでは全額返金のみ可能。一部返金はレジ側で別途会計。" }
-    ],
-    // 🌙 点検・締め・その他
-    closing: [
-        { no: 145, name: "レジ締め(レジキー有・日計)", steps: [
-            {t:"R", m:"レジキーを【S(点検・集計)】へ回す"},
-            {t:"R", m:"責任者No.入力 → 【金額入力】 → 【全取引】"},
-            {t:"R", m:"【クレジット集計】"},
-            {t:"J", m:"J-Mups端末日計票出力 → 枚数確認（6枚）"},
-            {t:"R", m:"レジ側：【Zレシート】出力 → キーを【L】へ戻す"}
-        ], note: "カード会社控・加盟店控は専用袋にしまう。枚数カウント不要。" },
-        { no: 150, name: "トレーニングモード", steps: [
-            {t:"R", m:"レジ閉局状態にする"},
-            {t:"R", m:"責任者No未入力状態でページ切替 → 【練習モード】"},
-            {t:"R", m:"ディスプレイの色が緑色になる"},
-            {t:"J", m:"J-Mupsも連動して練習モードへ"}
-        ], note: "練習モード終了後は必ず閉局し、通常モードに戻すこと。" }
-    ]
-};
+// ─────────────────────────────────────────
+// FULL DATABASE - All 150+ items from PDF
+// ─────────────────────────────────────────
+const DB = [
+{
+  id:'cat1', icon:'🟦', color:'#3b82f6', name:'基礎・開局・登録',
+  sub:'No.1–24 / P.1', range:'1-24',
+  items:[
+    {no:1, t:'六大用語', ops:['R'], s:[{h:'R',m:'「明るく元気に、隣のレジに聞こえる声で行う」'}], n:'心得帳参照'},
+    {no:2, t:'基本販売用語', ops:['R'], s:[{h:'R',m:'心得帳をよく読み、用語・言い回しを習得する'}], n:'心得帳参照'},
+    {no:3, t:'売場案内', ops:['R'], s:[{h:'R',m:'PLUを使う商品の説明、相当グループ名の説明を行う'}], n:'PLU資料配布'},
+    {no:4, t:'レジキー保管場所', ops:['R'], s:[{h:'R',m:'正面レジ：各フロアで1本　コーナーレジ：各レジ1本'}], n:'保管場所厳守'},
+    {no:5, t:'レジ離脱ルール', ops:['R'], s:[{h:'R',m:'レジキー・カッター台・ミリオンを所定の場所に保管し、隣接レジのチェッカーに行き先を伝える'}], n:''},
+    {no:6, t:'100番表', ops:['R'], s:[{h:'R',m:'消費税欄・まとめ売りの記入方法を確認する'}], n:'レシートの向きに注意'},
+    {no:7, t:'ディスプレイの見方', ops:['R'], s:[{h:'R',m:'M-POS / その他レジのディスプレイレイアウトを確認する'}], n:''},
+    {no:8, t:'レシートの交換', ops:['R'], s:[{h:'R',m:'レシート用紙切れ時の交換手順を実施する'}], n:''},
+    {no:9, t:'ゼロ点検', ops:['R'], s:[{h:'R',m:'ゼロ点検 → クリア'}], n:'レシートの向きに注意'},
+    {no:10, t:'自動開局(J-Mups)', ops:['J'], s:[
+      {h:'J',m:'画面が【POS連動中…】であることを確認'},
+      {h:'J',m:'【通信中】表示中にレジ操作をしない'}
+    ], n:'開局前に実施。鈴鹿入金時、J-Mups端末画面を確認'},
+    {no:11, t:'レジ開局', ops:['R'], s:[{h:'R',m:'レジキーR → 責任者No.入力 → 社員IDスキャン'}], n:'【通信中】表示中にレジ操作はしない'},
+    {no:12, t:'クリア', ops:['R'], s:[{h:'R',m:'クリアボタンを押して初期状態に戻す'}], n:'【通信中】表示中にレジ操作はしない'},
+    {no:13, t:'レジ開局(ICオフ表示時)', ops:['R'], s:[{h:'R',m:'レジ開局 → 責任者No. → 社員IDスキャン'}], n:'ディスプレイに【ICオフ】と表示の場合'},
+    {no:14, t:'レジ開局(スキャン)', ops:['R'], s:[{h:'R',m:'レジキーR → 社員IDスキャン'}], n:'レジ離脱時は必ず実施'},
+    {no:15, t:'ICオフ', ops:['R'], s:[{h:'R',m:'ICオフ操作を実施する'}], n:'ジャーナル記入表に理由を記入'},
+    {no:16, t:'レジ開局(再開局)', ops:['R'], s:[{h:'R',m:'閉局し → レジキーR → 責任者No.入力 → 社員IDスキャン'}], n:'閉局し再度開局操作を行う場合。ジャーナル記入表に理由を記入'},
+    {no:17, t:'普(手動)', ops:['R'], s:[{h:'R',m:'普 → 響 (クリアで戻らない場合)'}], n:'クリアで戻らない場合に使用'},
+    {no:18, t:'普(スキャン)', ops:['R'], s:[{h:'R',m:'普 → スキャン操作'}], n:''},
+    {no:19, t:'解除', ops:['R'], s:[{h:'R',m:'解除ボタンを押す'}], n:''},
+    {no:20, t:'スキャン登録', ops:['R'], s:[{h:'R',m:'商品バーコードをスキャンする'}], n:'※同じ商品を2個連続でスキャンすると音が変わる'},
+    {no:21, t:'身分証明確認', ops:['R'], s:[{h:'R',m:'商品登録 → [OK] / [NG] を選択'}], n:'商品一酒・煙草の場合に実施'},
+    {no:22, t:'年齢確認(酒・煙草)', ops:['R','P'], s:[
+      {h:'R',m:'商品スキャン → 年齢確認ボタンが表示される'},
+      {h:'P',m:'お客様：画面のOK/NGを選択'}
+    ], n:'酒・煙草販売時は必ず実施'},
+    {no:23, t:'明細画面・PLU画面', ops:['R'], s:[{h:'R',m:'固定画面 → [PLU画面へ] をタッチ'}], n:''},
+    {no:24, t:'JAN登録', ops:['R'], s:[{h:'R',m:'固定画面 → JANコードを入力'}], n:''},
+  ]
+},
+{
+  id:'cat2', icon:'🟨', color:'#f0a500', name:'スキャン・割引・訂正',
+  sub:'No.25–48 / P.2', range:'25-48',
+  items:[
+    {no:25, t:'DPT登録', ops:['R'], s:[{h:'R',m:'部門番号 → 金額 → 商品登録'}], n:'3桁・金額は本体価格で入力'},
+    {no:26, t:'クラス登録', ops:['R'], s:[{h:'R',m:'クラス番号 → 金額 → 商品登録'}], n:'4桁・金額は本体価格で入力'},
+    {no:27, t:'10万円以上の登録(DPT・クラス)', ops:['R'], s:[
+      {h:'R',m:'部門 → クラス → 税率変更(8%) → はい → 商品登録'}
+    ], n:'クリアや解除で税率変更を解除できる。画面に変更後の税率が表示'},
+    {no:28, t:'税率変更', ops:['R'], s:[
+      {h:'R',m:'部門 → クラス → 税率変更率8% → 税率変更率10% → はい → 商品登録'}
+    ], n:'店内飲食の場合は税率を10%に変更'},
+    {no:29, t:'リピート', ops:['R'], s:[{h:'R',m:'個数 × 商品登録'}], n:''},
+    {no:30, t:'掛算登録(スキャン・JAN)', ops:['R'], s:[{h:'R',m:'個数 × 商品登録'}], n:'スキャン・JAN・DPT・クラスすべて同様の操作'},
+    {no:31, t:'100個以上の場合', ops:['R'], s:[{h:'R',m:'個数(3桁) × 商品登録'}], n:'スキャン・JAN・DPT・クラスすべて同様の操作'},
+    {no:32, t:'DPT登録の場合', ops:['R'], s:[{h:'R',m:'個数 × 部門番号 → 金額 → 商品登録'}], n:''},
+    {no:33, t:'値引き', ops:['R'], s:[{h:'R',m:'析解除 → ○○円 → 金額入力'}], n:''},
+    {no:34, t:'999円引き以下(100円以外)', ops:['R'], s:[{h:'R',m:'析解除 → フリー割100円 → 金額'}], n:''},
+    {no:35, t:'1,000円引き以上', ops:['R'], s:[{h:'R',m:'析解除 → フリー割100円 → 金額 → 商品登録'}], n:''},
+    {no:36, t:'割引(10%・30%・50%)', ops:['R'], s:[{h:'R',m:'析解除 → 割引30% → フリー割'}], n:''},
+    {no:37, t:'上記以外の割引', ops:['R'], s:[{h:'R',m:'析解除 → ○○% → フリー割'}], n:'※自動値引きシール・精肉企画シール・精肉値引きシールの場合も同様'},
+    {no:38, t:'四捨引(タッチパネル)', ops:['R'], s:[{h:'R',m:'対象商品タッチ → 確認 → 商品登録 → 終了'}], n:''},
+    {no:39, t:'%割引(タッチパネル)', ops:['R'], s:[{h:'R',m:'対象商品タッチ → 確認 → 商品登録 → 終了'}], n:'※印字して終了は[印字して終了]は表示されない'},
+    {no:40, t:'確認', ops:['R'], s:[{h:'R',m:'確認 → 商品登録'}], n:'直前の商品の場合のみ'},
+    {no:41, t:'販売取消', ops:['R'], s:[{h:'R',m:'取消 → 対象商品登録 → 指定取消'}], n:''},
+    {no:42, t:'指定取消(スキャン)', ops:['R'], s:[{h:'R',m:'対象商品タッチ → 指定取消'}], n:''},
+    {no:43, t:'画面訂正', ops:['R'], s:[{h:'R',m:'【画面訂正】をタッチ → 対象商品をタッチ'}], n:'掛算登録時は全個数が取り消される'},
+    {no:44, t:'価格の強制入力', ops:['R'], s:[{h:'R',m:'正しい売価(本体価格) → はい → △'}], n:''},
+    {no:45, t:'一括取消', ops:['R'], s:[{h:'R',m:'【一括取消】 → 【はい】を選択'}], n:'一括取消レシートは赤伝に添付しドロアー保管'},
+    {no:46, t:'登録内容の確認', ops:['R'], s:[{h:'R',m:'△/▽ で上下スクロールして確認'}], n:''},
+    {no:47, t:'小計', ops:['R'], s:[{h:'R',m:'商品登録終了 → 小計'}], n:'小計後でも追加登録可能（再度[小計]を押す）'},
+    {no:48, t:'転送', ops:['R'], s:[{h:'R',m:'商品登録終了 → 小計 → 転送'}], n:'転送後の追加登録はレジ本体で行う'},
+  ]
+},
+{
+  id:'cat3', icon:'🔵', color:'#06b6d4', name:'呼出・追加・操作補足',
+  sub:'No.49–71 / P.3', range:'49-71',
+  items:[
+    {no:49, t:'呼出', ops:['R'], s:[{h:'R',m:'呼出 → 追加商品登録'}], n:'※呼出後にケース売り商品、追加商品の登録を行う'},
+    {no:50, t:'追加登録', ops:['R'], s:[{h:'R',m:'追加商品登録 → 小計'}], n:''},
+    {no:51, t:'DPT登録の場合', ops:['R'], s:[{h:'R',m:'析解除 → 部門番号 → 金額 → 商品登録'}], n:'ハンドスキャナーを使用'},
+    {no:52, t:'クラス登録', ops:['R'], s:[{h:'R',m:'析解除 → クラス番号 → 金額 → 商品登録'}], n:'同じ品品を売っても登録枠は変わらない'},
+    {no:53, t:'税率変更(呼出後)', ops:['R'], s:[{h:'R',m:'部門 → クラス → 税率変更 → はい → 商品登録'}], n:'3桁・金額は本体価格で入力'},
+    {no:54, t:'リピート(呼出後)', ops:['R'], s:[{h:'R',m:'リピート → 個数 × 商品登録'}], n:'4桁・金額は本体価格で入力'},
+    {no:55, t:'掛算登録(スキャン・JAN)', ops:['R'], s:[{h:'R',m:'個数 × 商品登録'}], n:'スキャン・JAN・DPT・クラスすべて同様の操作'},
+    {no:56, t:'100個以上の場合', ops:['R'], s:[{h:'R',m:'個数(3桁) × 商品登録'}], n:''},
+    {no:57, t:'値引き(呼出後)', ops:['R'], s:[{h:'R',m:'析解除 → ○○円 → 金額入力'}], n:''},
+    {no:58, t:'999円引き以下(金額指定)', ops:['R'], s:[{h:'R',m:'フリー割100円 → ○○円 → 金額'}], n:''},
+    {no:59, t:'1,000円引き以上(呼出後)', ops:['R'], s:[{h:'R',m:'フリー割100円 → ○○円 → 金額 → 商品登録'}], n:''},
+    {no:60, t:'割引(10%・30%・50%)', ops:['R'], s:[{h:'R',m:'ページ切替 → 割引切割'}], n:'[まとめ表示]をタッチすると割引率が表示。確認後[まとめ表示]をタッチ'},
+    {no:61, t:'上記以外の割引', ops:['R'], s:[{h:'R',m:'ページ切替 → %割引'}], n:'確認後[まとめ表示]をタッチ'},
+    {no:62, t:'四捨引(タッチパネル)', ops:['R'], s:[{h:'R',m:'対象商品タッチ → 百捨引 → ページ切替'}], n:''},
+    {no:63, t:'%割引(タッチパネル)', ops:['R'], s:[{h:'R',m:'対象商品タッチ → %割引'}], n:'JAN登録時はバーコード下の数字を下2桁まで入力'},
+    {no:64, t:'自動割引', ops:['R'], s:[{h:'R',m:'バーコードをスキャンすると自動で割引が適用される'}], n:'商品登録中は[印字して終了]は表示されない'},
+    {no:65, t:'確認(呼出後)', ops:['R'], s:[{h:'R',m:'確認 → 商品登録 → 終了'}], n:'直前の商品の場合のみ'},
+    {no:66, t:'取消(呼出後)', ops:['R'], s:[{h:'R',m:'取消 → 対象商品登録 → 指定取消'}], n:''},
+    {no:67, t:'指定取消(スキャン・呼出後)', ops:['R'], s:[{h:'R',m:'指定取消 → 金額 → いいえ'}], n:'掛算登録の場合は全個数が取り消される'},
+    {no:68, t:'画面訂正(呼出後)', ops:['R'], s:[{h:'R',m:'対象商品タッチ → 画面訂正 → 正しい売価(本体価格) → はい → △'}], n:'一括取消の場合は掛算した行の商品の個数が「1」表示'},
+    {no:69, t:'価格の強制入力(呼出後)', ops:['R'], s:[{h:'R',m:'正しい売価(本体価格) → はい → △ → 一括取消'}], n:'一括取消レシートは赤伝に添付し、ドロアーに保管する'},
+    {no:70, t:'一括取消(呼出後)', ops:['R'], s:[{h:'R',m:'商品登録終了 → 一括取消'}], n:'小計後でも追加登録可能'},
+    {no:71, t:'登録内容の確認(呼出後)', ops:['R'], s:[{h:'R',m:'△/▽ → 確認 → 小計'}], n:''},
+  ]
+},
+{
+  id:'cat4', icon:'💴', color:'#10b981', name:'会計・金券・磁気カード',
+  sub:'No.72–91 / P.4', range:'72-91',
+  items:[
+    {no:72, t:'預/現金', ops:['R'], s:[{h:'R',m:'預/現金 → 金額入力'}], n:'1万円札を預かった時のみ万券を使用'},
+    {no:73, t:'万券', ops:['R'], s:[{h:'R',m:'万券 → 金額入力'}], n:'ドロアー内のレイアウト確認'},
+    {no:74, t:'紙幣の取り方・数え方', ops:['R'], s:[{h:'R',m:'5千円→千円の順に手に取り、表裏3回数える'}], n:''},
+    {no:75, t:'小銭の取り方', ops:['R'], s:[{h:'R',m:'500円→1円の順に手に取り数える'}], n:''},
+    {no:76, t:'預かり金入力ミス(会計前)', ops:['R'], s:[{h:'R',m:'画面訂正 → 正しい金額を入力'}], n:'お買上金額より少ない金額を入力/[預/現金]キーを押した場合は[画面訂正]を実施'},
+    {no:77, t:'預かり金入力ミス(会計後)', ops:['R'], s:[{h:'R',m:'電卓で正しいお釣銭を計算する'}], n:'100番表に正しい預かり金とお釣銭を記入'},
+    {no:78, t:'スキャナー切断', ops:['R'], s:[{h:'R',m:'スキャナー切断 → 小計 → 出力'}], n:''},
+    {no:79, t:'スキャナー戻し', ops:['R'], s:[{h:'R',m:'スキャナー戻し → 小計 → 商品登録'}], n:''},
+    {no:80, t:'金券説明', ops:['R'], s:[{h:'R',m:'使用できる金券の種類・お断り・期限を確認する'}], n:'別紙資料[金券一覧]参照'},
+    {no:81, t:'金券(額面以上の合計)', ops:['R'], s:[{h:'R',m:'小計 → 金券選択 → OK → 金券金額入力 → OK'}], n:'切り取り線カット・レジNo等の記入'},
+    {no:82, t:'金券(複数枚・複数券入力)', ops:['R'], s:[
+      {h:'R',m:'小計 → 金券 → 金券選択 → OK → 戻る → 金券選択 → OK'},
+      {h:'R',m:'金券選択繰り返し → 小計戻し → 会計操作'}
+    ], n:'会計後、金券を処理。切り取り線カット・ポチギス稼め'},
+    {no:83, t:'小計戻し', ops:['R'], s:[{h:'R',m:'小計 → 金券 → 戻る → 小計'}], n:''},
+    {no:84, t:'カード説明', ops:['R'], s:[{h:'R',m:'レジ本体の向き・カードの使い方を説明する'}], n:'別紙資料[クレジットカードについて]参照'},
+    {no:85, t:'J-Mupsレジ操作(レジ本体)', ops:['R','J'], s:[
+      {h:'R',m:'商品登録 → 小計 → クレジット'},
+      {h:'J',m:'端末操作(J-Mups)'}
+    ], n:''},
+    {no:86, t:'会計操作(レジ本体)', ops:['R','J'], s:[
+      {h:'R',m:'クレジット → J-MUPS → 一括 → レシート出力'},
+      {h:'J',m:'端末操作・お客様控・お客様取控を確認'}
+    ], n:''},
+    {no:87, t:'クレジット(磁気一括)', ops:['R','J'], s:[
+      {h:'R',m:'小計 → クレジット'},
+      {h:'J',m:'カードスリット → 【一括】 → 確認 → 次へ → レシート出力'}
+    ], n:'10,001円以上のお会計はサイン必須'},
+    {no:88, t:'クレジット(磁気分割)', ops:['J'], s:[{h:'J',m:'カードスリット → 【分割】 → 支払回数入力 → 1(回) → 次へ → レシート出力'}], n:'夏:7月・8月　冬:12月・1月'},
+    {no:89, t:'ボーナス', ops:['J'], s:[{h:'J',m:'カードスリット → ボーナス → ボーナス → 次へ → レシート出力'}], n:''},
+    {no:90, t:'ボーナス(オリコ・ライフ)', ops:['J'], s:[{h:'J',m:'カードスリット → ボーナス → ボーナス → リボ → 次へ → レシート出力'}], n:''},
+    {no:91, t:'リボ', ops:['J'], s:[{h:'J',m:'カードスリット → リボ → 次へ → レシート出力'}], n:''},
+  ]
+},
+{
+  id:'cat5', icon:'💳', color:'#8b5cf6', name:'IC・PayPay・領収証・仮締め',
+  sub:'No.92–110 / P.5', range:'92-110',
+  items:[
+    {no:92, t:'ICカード一括', ops:['J'], s:[{h:'J',m:'ICカード挿入 → 一括 → 確認 → 暗証番号入力 → 確定'}], n:'暗証番号不明時は【確定】押下でサイン対応。10,001円以上はサイン必須'},
+    {no:93, t:'ICカード分割', ops:['J'], s:[{h:'J',m:'ICカード挿入 → 分割 → 支払回数 → 1(回) → 次へ → レシート出力'}], n:''},
+    {no:94, t:'ICカードボーナス', ops:['J'], s:[{h:'J',m:'ICカード挿入 → ボーナス → 次へ → レシート出力'}], n:''},
+    {no:95, t:'ICカードボーナス(オリコ・ライフ)', ops:['J'], s:[{h:'J',m:'ICカード挿入 → ボーナス → リボ → 次へ → レシート出力'}], n:''},
+    {no:96, t:'ICカードリボ', ops:['J'], s:[{h:'J',m:'ICカード挿入 → リボ → レシート出力'}], n:''},
+    {no:97, t:'ICチップ読み取り不可', ops:['J'], s:[{h:'J',m:'ICカード操作 → 感磁カード操作(スリット)は出来ないのでインプリンターや他の支払い方法のみ対応可能'}], n:'お客様に【確定】を押して頂く→サイン必須'},
+    {no:98, t:'金券併用(カード)', ops:['R','J'], s:[
+      {h:'R',m:'小計 → 金券 → 金券金額 → クレジット'},
+      {h:'J',m:'端末操作(J-Mups)'}
+    ], n:'金務併用時はカード操作を先に行う'},
+    {no:99, t:'現金併用(カード)', ops:['R','J'], s:[
+      {h:'R',m:'小計 → 金額 → クレジット'},
+      {h:'J',m:'J-MUPS → 端末操作 → 金額操作 → レシート出力'}
+    ], n:'QRコードは店舗ごとに一つのQRコード。店舗で定まっているQRコードを使用する'},
+    {no:100, t:'PayPay説明', ops:['P'], s:[{h:'P',m:'現金・金券・カード併用不可。お客様にQRコードをスキャンして貰い、決済額を確認'}], n:'QRコードは店舗ごとに異なる'},
+    {no:101, t:'PayPay商品登録', ops:['R'], s:[{h:'R',m:'商品登録 → 小計 → PayPay選択'}], n:''},
+    {no:102, t:'PayPay決済操作(レジ本体)', ops:['R','P'], s:[
+      {h:'P',m:'お客様がQRコードスキャン → お支払額入力 → 【支払う】'},
+      {h:'R',m:'決済完了音とスマホ画面の完了を確認'}
+    ], n:'金額がレジと一致していることを必ず確認'},
+    {no:103, t:'PayPay会計操作', ops:['R'], s:[{h:'R',m:'合計金額入力 → 金務操作(J-Mups)'}], n:''},
+    {no:104, t:'PayPay金券併用', ops:['R'], s:[{h:'R',m:'商品登録 → 小計 → 金額 → PayPay → お客様押下'}], n:'オリジョッピングチケット・お買物券のみ使用可能'},
+    {no:105, t:'領収証発行時の作業', ops:['R'], s:[{h:'R',m:'レシート一発行者着印を押判する / カード支払い時はカード販売分印判を押判する'}], n:'押印などの作業は金銭受渡しを終わらせてから行う'},
+    {no:106, t:'領収証発行(固定式スキャナー)', ops:['R'], s:[{h:'R',m:'領収証発行 → 固定画面'}], n:'レシートの後、自動出力。※1点登録後は発行可能'},
+    {no:107, t:'領収証発行(レシートスキャン)', ops:['R'], s:[{h:'R',m:'レシートスキャン → 【領収証発行】ボタン表示'}], n:'会計直後に発行可能。会計から30日間有効'},
+    {no:108, t:'仮締め前の会計', ops:['R'], s:[{h:'R',m:'呼出 → 小計 → 会計点検 → 仮締め'}], n:'本体・固定式スキャナー各1件ずつ行う / 責任者名は記入しない'},
+    {no:109, t:'仮締め(固定式スキャナー)', ops:['R'], s:[{h:'R',m:'仮締め → 金額 → 仮締め → 商品登録 → 小計'}], n:'ディスプレイに[仮締め中]と表示される'},
+    {no:110, t:'仮締め会計(レジ本体)', ops:['R'], s:[{h:'R',m:'仮締め会計 → 小計 → 会計 → 預/現金'}], n:'【仮締め会計】で呼び出した後、追加登録・商品取消後でも追加登録可能'},
+  ]
+},
+{
+  id:'cat6', icon:'🔄', color:'#f59e0b', name:'加算・返品基本',
+  sub:'No.111–121 / P.6', range:'111-121',
+  items:[
+    {no:111, t:'加算箒', ops:['R'], s:[{h:'R',m:'商品登録 → 小計 → 加算算 → 加算算'}], n:''},
+    {no:112, t:'呼出加算', ops:['R'], s:[{h:'R',m:'呼出加算 → 商品登録 → 会計操作'}], n:''},
+    {no:113, t:'呼出加算(別)', ops:['R'], s:[{h:'R',m:'呼出 → 商品登録 → 小計 → 加算'}], n:''},
+    {no:114, t:'返品操作前の確認', ops:['R'], s:[
+      {h:'R',m:'①レシートと商品内容を確認後、担当者に返品の可否を確認'},
+      {h:'R',m:'②レシートの会計内容を確認する'},
+      {h:'R',m:'③タッチボードで返品内容を確認する'},
+      {h:'R',m:'④お客様に返品の可否を確認して頂く'},
+      {h:'R',m:'⑤レジで返品操作を行う'}
+    ], n:''},
+    {no:115, t:'返品レシートの明細書', ops:['R'], s:[
+      {h:'R',m:'打ちミスの場合は、返品レシートの場合は署名は不要'},
+      {h:'R',m:'レジNo.3桁+レシートNo.日付6桁入力する'}
+    ], n:'元のレシートの裏に返品レシート・中書レシートはお客様にお渡し。元の売上レシートの裏に返品代用伝票リストNo.4桁+レシートNo.日付6桁入力する'},
+    {no:116, t:'全返品(現金)', ops:['R'], s:[
+      {h:'R',m:'【返品】 → 理由選択 → 元レシートスキャン'},
+      {h:'R',m:'【2】 → 金額確認 → 【OK】 → 【小計】'},
+      {h:'R',m:'返金レシート出力 → ページ切替 → 【明細書】 → スキャン'}
+    ], n:'明細書は店舗控として保管'},
+    {no:117, t:'全返品(別パターン)', ops:['R'], s:[
+      {h:'R',m:'返品 → 前/金額 → ページ切替 → 明細書'},
+      {h:'R',m:'返品商品タッチ → 返品レシートスキャン → 小計'}
+    ], n:'複数商品を選択して画面訂正はできない'},
+    {no:118, t:'完売返品(一部返品)・1個返品', ops:['R'], s:[
+      {h:'R',m:'返品 → 前/金額 → 1 → 返品商品タッチ → DPT登録'},
+      {h:'R',m:'返品レシートスキャン → 金額 → OK → 明細書'}
+    ], n:'一部返品操作全て在、返品商品をDPT等でスキャンして行う'},
+    {no:119, t:'2個のうち1個返品(一部返品)', ops:['R'], s:[
+      {h:'R',m:'返品 → 前/金額 → 1個分登録 → ページ切替 → まとめ表示'},
+      {h:'R',m:'返品レシートスキャン → 金額 → OK → 小計 → 明細書'}
+    ], n:'掛算登録している場合は、タッチした行の商品の個数が全て取り消される。画面・一括取消レシートの左側の数が「1」表示'},
+    {no:120, t:'2個のうち1個返品・別パターン', ops:['R'], s:[
+      {h:'R',m:'返品 → 前/金額 → 1個分登録 → まとめ表示'},
+      {h:'R',m:'金額 → OK → 小計 → 明細書'}
+    ], n:'一括取消レシートは赤伝に添付し、ドロアーに保管する'},
+    {no:121, t:'取替・安い→高い商品(一部返品)', ops:['R'], s:[
+      {h:'R',m:'返品 → 前/金額 → ページ切替 → まとめ表示'},
+      {h:'R',m:'返品商品登録 → 金額 → OK → 追加登録'}
+    ], n:'追加登録が可能'},
+  ]
+},
+{
+  id:'cat7', icon:'↩️', color:'#ec4899', name:'返品応用・カード返品前確認',
+  sub:'No.122–129 / P.7', range:'122-129',
+  items:[
+    {no:122, t:'取替・高い→安い商品(一部返品)', ops:['R'], s:[
+      {h:'R',m:'返品商品タッチ → 前/金額 → ページ切替 → まとめ表示'},
+      {h:'R',m:'返金レシートスキャン → 金額 → OK → 追加登録'}
+    ], n:'追加登録が可能'},
+    {no:123, t:'税率の打ち直し(8%↔10%)', ops:['R'], s:[
+      {h:'R',m:'返品商品タッチ → 前/金額 → 税率変更 → 金額'},
+      {h:'R',m:'返品レシートスキャン → 金額 → OK'}
+    ], n:''},
+    {no:124, t:'レシート代用伝票', ops:['R'], s:[{h:'R',m:'返品に使用するレシート代用伝票はスタッフが管理している'}], n:'使用後にレシート代用伝票使用報告書を記入する'},
+    {no:125, t:'期限切れレシート返品(99返品)', ops:['R'], s:[
+      {h:'R',m:'返品 → 明細書 → 画面訂正 → 前/金額 → 返品レシートスキャン'},
+      {h:'R',m:'OK → 金額 → ページ切替 → 明細書'}
+    ], n:'明細書の裏に元レシートのレジNo.・日付を記入する'},
+    {no:126, t:'併扱レシート返品(99返品)', ops:['R'], s:[
+      {h:'R',m:'返品 → 前/金額 → 9999999 → ページ切替 → 明細書'},
+      {h:'R',m:'返品商品登録 → 金額 → OK → 明細書'}
+    ], n:'明細書の裏に元レシートのレジNo.・日付を記入する'},
+    {no:127, t:'レシートなし返品(99返品)', ops:['R'], s:[
+      {h:'R',m:'【返品】 → 理由選択 → ジャンコード【9999999】入力'},
+      {h:'R',m:'【小計】 → 返品商品登録 → 【預/現金】'}
+    ], n:'販売実績調査後に実施。レシート代用伝票使用'},
+    {no:128, t:'カード返品操作前の確認', ops:['R'], s:[
+      {h:'R',m:'①レシートと商品が一致しているか確認'},
+      {h:'R',m:'②レシートの会計内容内容を確認する'},
+      {h:'R',m:'③返金に使用するクレジットカード・支払方法が一致しているか確認する'}
+    ], n:'お客様控レジシート・J-Mupsお客様控・返品伝票はお渡し可能。クレジットカードを持参し開く。※デビットカード等で返品を行う場合は、反映まで数日かかる'},
+    {no:129, t:'磁気カード全返品', ops:['R','J'], s:[
+      {h:'R',m:'【カード返品】 → 理由選択 → レシートスキャン'},
+      {h:'J',m:'カードスリット → 伝票番号(J伝票No)入力 → 確認 → 明細書'}
+    ], n:'金額一致を必ず確認。カード会社控にはサイン必須'},
+  ]
+},
+{
+  id:'cat8', icon:'💎', color:'#14b8a6', name:'磁気・ICカード返品操作',
+  sub:'No.130–134 / P.8', range:'130-134',
+  items:[
+    {no:130, t:'磁気カード一部返品', ops:['R','J'], s:[
+      {h:'R',m:'カード返品 → 確認 → レシートスキャン → 伝票番号 → 次へ → 商品コード → 会計操作 → OK'},
+      {h:'J',m:'J-Mups端末操作 → 伝票No → 次へ → 小計'}
+    ], n:'お客様が希望する会計方法で再度会計する(クレジットカード・現金・PayPay)'},
+    {no:131, t:'磁気カード取替・売価違い(一部返品)', ops:['R','J'], s:[
+      {h:'R',m:'カード返品 → 確認 → レシートスキャン → 伝票番号 → 次へ → 小計'},
+      {h:'J',m:'J-Mups端末操作 → 伝票No → 次へ → 明細書'},
+      {h:'R',m:'商品登録 → 会計操作'}
+    ], n:'キーボードの[指定取消]は使用不可'},
+    {no:132, t:'ICカード全返品', ops:['R','J'], s:[
+      {h:'R',m:'カード返品 → 確認 → レシートスキャン → 伝票番号 → 次へ → OK'},
+      {h:'J',m:'ICカード挿入 → 確認 → 明細書 → ページ切替'},
+      {h:'R',m:'レジ明細書'}
+    ], n:'お客様が希望する会計方法で再度会計する(クレジットカード・現金・PayPay)'},
+    {no:133, t:'ICカード一部返品', ops:['R','J'], s:[
+      {h:'R',m:'カード返品 → 確認 → レシートスキャン → 伝票番号 → 次へ → OK'},
+      {h:'J',m:'ICカード挿入 → 確認 → 伝票No → 次へ → 明細書'},
+      {h:'R',m:'商品登録 → 会計操作 → 明細書'}
+    ], n:'再度正しい方法で会計を行う'},
+    {no:134, t:'ICカード取替・売価違い(一部返品)', ops:['R','J'], s:[
+      {h:'R',m:'カード返品 → 確認 → レシートスキャン → 伝票番号 → 次へ → OK'},
+      {h:'J',m:'ICカード挿入 → 確認 → 伝票No → 次へ'},
+      {h:'R',m:'商品登録 → 会計操作 → 小計'}
+    ], n:'お客様が希望する会計方法で再度会計する(クレジットカード・現金・PayPay他)'},
+  ]
+},
+{
+  id:'cat9', icon:'📱', color:'#ef4444', name:'PayPay返品・近電・特殊操作',
+  sub:'No.135–142 / P.9', range:'135-142',
+  items:[
+    {no:135, t:'PayPay返品前の確認', ops:['P'], s:[
+      {h:'P',m:'①レシートと商品内容を確認後、担当者に返品の可否を確認'},
+      {h:'P',m:'②お客様の会計内容を確認する'},
+      {h:'P',m:'③タブレット・PCで操作する'},
+      {h:'P',m:'④ダッシュボードで返品内容を確認する'},
+      {h:'P',m:'⑤レジで返品操作を行う'}
+    ], n:''},
+    {no:136, t:'ダッシュボード操作', ops:['P'], s:[
+      {h:'P',m:'サイトを開く → 取消 → 決済を探す → 小計 → PayPay返品操作'}
+    ], n:'全額返金のみ可能'},
+    {no:137, t:'PayPayレジ操作(全返品)', ops:['R'], s:[
+      {h:'R',m:'カード返品 → 明細書 → ページ切替 → 小計'},
+      {h:'R',m:'返品商品タッチ → 返金レシートスキャン'}
+    ], n:'お客様が希望する会計方法で再度会計する'},
+    {no:138, t:'PayPayレジ操作(一部返品)', ops:['R'], s:[
+      {h:'R',m:'カード返品 → 前/金額 → 1 → 返品商品タッチ'},
+      {h:'R',m:'返金レシートスキャン → 金額 → OK → 会計操作'}
+    ], n:'お客様が希望する会計方法で再度会計する'},
+    {no:139, t:'マイナス登録処理伝票', ops:['R'], s:[
+      {h:'R',m:'カード返品 → 現金/カード → 合計金額入力 → 伝票作成する'}
+    ], n:'資料：返金レシート・マイナス登録処理伝票参照。レシートのバーコードをスキャンできない場合はレジNo.3桁+日付6桁入力する'},
+    {no:140, t:'明細書発行', ops:['R'], s:[
+      {h:'R',m:'レシート出力 → Xレシート出力 → レシート出力'}
+    ], n:'明細書発行の場合は明細書を2枚発行する'},
+    {no:141, t:'掛売(近電)', ops:['R'], s:[
+      {h:'R',m:'小計 → 会計点検 → 合計金額入力 → 一括'},
+      {h:'R',m:'インプリンター → お客様のQRコードを押下 → レジ操作する'}
+    ], n:'※掛売伝票や決済完了・カード販売分印が発生しない場合やカード決済機を起動後、レジ操作する'},
+    {no:142, t:'インプリンター(オフラインカード)', ops:['R'], s:[
+      {h:'R',m:'レジ操作 → 合計金額入力 → [オフライン] → 合計金額入力'},
+      {h:'R',m:'お客様の操作 → 確認'}
+    ], n:'※インプリンターや決済できないカードが決済できない場合やカード現地発生物などに使用する'},
+  ]
+},
+{
+  id:'cat10', icon:'🔧', color:'#6366f1', name:'装備・ジャーナル・Xレシート',
+  sub:'No.143–149 / P.9後半', range:'143-149',
+  items:[
+    {no:143, t:'Xレシート(装置ON)', ops:['R'], s:[{h:'R',m:'小計 → Xレシート出力 → レシートスキャン'}], n:'※休止モードの場合は、ダイナキー[R]タッチ後に同様の操作'},
+    {no:144, t:'Xレシート(装置OFF)', ops:['R'], s:[{h:'R',m:'ページ切替 → 会計点検 → 面レシート → クリア'}], n:'※休止モードの場合は、ダイナキー[R]タッチ後に同様の操作'},
+    {no:145, t:'レジ締め・日計(レジキー有)', ops:['R','J'], s:[
+      {h:'R',m:'レジキーを【S】へ → 責任者No.入力 → 【集計】'},
+      {h:'J',m:'J-Mups日計票出力(6枚確認)'}
+    ], n:'金券・お払い明細書を添付する。Xレシートの金額と中間計票の合計が一致しているか確認。日計票は出てきた順に重ねて専用袋へ'},
+    {no:146, t:'レジ締め・日計(レジキー無)', ops:['R','J'], s:[
+      {h:'R',m:'レジキーをSへ → 責任者No. → 集計'},
+      {h:'J',m:'J-Mups端末操作'}
+    ], n:'カード会社控・加盟店控・ポチギス稼め。※責任者No.が入っていない状態で日計処理はできない'},
+    {no:147, t:'日計処理エラー', ops:['R','J'], s:[
+      {h:'J',m:'J-Mups端末操作 → 一括取消'},
+      {h:'R',m:'レジキーS → 責任者No. → 集計'}
+    ], n:'※J-Mups日計票出力されない場合は6枚確認後、紙切れ・叩き折り等でエラーを出力する。日計処理でエラーが発生した場合はJ-Mups端末より日計処理を実施して下さい'},
+    {no:148, t:'ジャーナル表示', ops:['R'], s:[{h:'R',m:'ジャーナル → スクロール → ◀▶'}], n:'資料参照'},
+    {no:149, t:'他レジジャーナル', ops:['R'], s:[{h:'R',m:'他レジジャーナル → スクロール'}], n:''},
+    {no:150, t:'トレーニングモード', ops:['R','J'], s:[
+      {h:'R',m:'閉局状態でページ切替 → 【練習モード】'}
+    ], n:'画面が緑色に変化。J-Mupsも連動'},
+  ]
+},
+{
+  id:'cat11', icon:'📋', color:'#84cc16', name:'その他研修項目(FDチェックリスト)',
+  sub:'P.11 / 追加23項目', range:'別枠',
+  items:[
+    {no:'FD-1', t:'収入印紙', ops:['R'], s:[{h:'R',m:'レシート・領収証に印紙を貼る印紙が印字されている'}], n:'本体価格5万円以上(カード以外)'},
+    {no:'FD-2', t:'ジャーナルと両替', ops:['R'], s:[{h:'R',m:'レシートに押し込む / お客様との両替は千円目まで / ジャーナル記入表に明細を記入する'}], n:'お客様との両替は1,000円まで、ジャーナル記入表に明細を記入する'},
+    {no:'FD-3', t:'お客様との両替', ops:['R'], s:[{h:'R',m:'お客様を取り押さえ、正しい金額・お釣銭を記入する / 固定スキャナーでスキャンする'}], n:'PLU品目はミリオンで添付する'},
+    {no:'FD-4', t:'フロアマイク', ops:['R'], s:[{h:'R',m:'フロアマイクの使用方法を習得する'}], n:'資料参照'},
+    {no:'FD-5', t:'電話マイク', ops:['R'], s:[{h:'R',m:'電話マイクの使用方法を習得する'}], n:'心得帳参照'},
+    {no:'FD-6', t:'買物ルール', ops:['R'], s:[{h:'R',m:'買物ルールを理解する'}], n:'心得帳参照'},
+    {no:'FD-7', t:'符丁', ops:['R'], s:[{h:'R',m:'符丁(隠語)を習得する'}], n:''},
+    {no:'FD-8', t:'カゴの入れ方', ops:['R'], s:[{h:'R',m:'従業員の体休期間中の買い物は、レシートまたは袋または商品にミリオンで添付する'}], n:''},
+    {no:'FD-9', t:'取り扱いに気をつける商品', ops:['R'], s:[{h:'R',m:'いちご・お弁当・パンなど取り扱い注意商品を把握する'}], n:''},
+    {no:'FD-10', t:'お渡しする仕様がある商品', ops:['R'], s:[{h:'R',m:'お弁当・お惣菜→お箸　アイス・デザート→スプーン　など'}], n:''},
+    {no:'FD-11', t:'ミリオンテープ', ops:['R'], s:[{h:'R',m:'ミリオンテープの出し方と保管方法を覚える'}], n:''},
+    {no:'FD-12', t:'防犯タグの解除方法', ops:['R'], s:[{h:'R',m:'シールタイプの防犯タグ解除方法を習得する'}], n:''},
+    {no:'FD-13', t:'マイバック特参の場合の対応', ops:['R'], s:[{h:'R',m:'マイバックでの買い物の場合の対応方法を習得する'}], n:''},
+    {no:'FD-14', t:'有料レジ袋', ops:['R'], s:[{h:'R',m:'有料レジ袋の案内・販売方法を習得する'}], n:''},
+    {no:'FD-15', t:'50番', ops:['R'], s:[{h:'R',m:'50番の取り扱い方法を習得する'}], n:'資料参照'},
+    {no:'FD-16', t:'100番', ops:['R'], s:[{h:'R',m:'100番の取り扱い・作成方法を習得する'}], n:'資料参照'},
+    {no:'FD-17', t:'両替表の記入方法・受け渡しの流れ', ops:['R'], s:[{h:'R',m:'両替表の記入方法と受け渡しの流れを習得する'}], n:''},
+    {no:'FD-18', t:'100番作成方法・受け渡しの流れ', ops:['R'], s:[{h:'R',m:'100番の作成方法と受け渡しの流れを習得する'}], n:''},
+    {no:'FD-19', t:'紙幣・金額・書き方法', ops:['R'], s:[{h:'R',m:'紙幣の記入法・金額の書き方を習得する'}], n:''},
+    {no:'FD-20', t:'両替表の記入方法・受け渡し', ops:['R'], s:[{h:'R',m:'両替表の記入方法・受け渡し方法を確認する'}], n:''},
+    {no:'FD-21', t:'有料レジ袋(詳細)', ops:['R'], s:[{h:'R',m:'有料レジ袋の種類・価格・案内方法を習得する'}], n:''},
+    {no:'FD-22', t:'出庫・会計の流れ', ops:['R'], s:[{h:'R',m:'出庫・会計の流れを習得する'}], n:''},
+    {no:'FD-23', t:'シールタイプ防犯タグ', ops:['R'], s:[{h:'R',m:'シールタイプ防犯タグの解除方法を習得する'}], n:''},
+  ]
+}
+];
 
-// ユーティリティ
-const $ = (id) => document.getElementById(id);
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let done = new Set(JSON.parse(localStorage.getItem('reg_done')||'[]'));
+let curCat = null;
+let curNo  = null;
+let prevView = 'view-home';
 
-// ナビゲーション制御
-function setActiveNav(navId) {
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    $(navId).classList.add('active');
+function saveDone(){localStorage.setItem('reg_done',JSON.stringify([...done]));}
+function totalItems(){return DB.reduce((a,c)=>a+c.items.length,0);}
+function updateTotalProg(){
+  document.getElementById('total-prog').textContent = `${done.size} / ${totalItems()}`;
 }
 
-// 🏠 ホーム画面表示
-function goHome() {
-    setActiveNav('nav-home');
-    $('home-menu').style.display = 'grid';
-    $('list-view').style.display = 'none';
-    $('search-container').style.display = 'none';
-    window.scrollTo(0, 0);
+// ─────────────────────────────────────────
+// HOME
+// ─────────────────────────────────────────
+function renderHome(){
+  switchView('view-home');
+  setNavActive('nav-home');
+  document.getElementById('head-title').textContent = 'レジ研修ナビ';
+
+  const total = totalItems();
+  const pct = total ? Math.round(done.size/total*100) : 0;
+
+  let html = `
+    <div class="progress-card">
+      <div class="progress-title">総合進捗 <span>${done.size} / ${total} (${pct}%)</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="section-hd">カテゴリ</div>
+    <div class="cat-grid">
+  `;
+
+  DB.forEach(cat=>{
+    const catDone = cat.items.filter(i=>done.has(String(i.no))).length;
+    const catPct = cat.items.length ? Math.round(catDone/cat.items.length*100) : 0;
+    html += `
+      <div class="cat-card" style="--cat-color:${cat.color}" onclick="showList('${cat.id}')">
+        <div class="cat-icon">${cat.icon}</div>
+        <div class="cat-name">${cat.name}</div>
+        <div class="cat-sub">${cat.sub}</div>
+        <div class="cat-meta">
+          <span class="cat-count">${catDone}/${cat.items.length}</span>
+          <span style="font-size:10px;color:var(--text3)">${catPct}%</span>
+        </div>
+        <div class="cat-prog-bar"><div class="cat-prog-fill" style="width:${catPct}%"></div></div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  document.getElementById('view-home').innerHTML = html;
+  updateTotalProg();
 }
 
-// 📋 カテゴリ別のリスト表示
-function showCategory(catKey) {
-    if(catKey === 'return') setActiveNav('nav-return');
-    else setActiveNav('nav-home'); // 他のカテゴリはホーム経由の扱い
-    
-    $('home-menu').style.display = 'none';
-    $('search-container').style.display = 'none';
-    $('list-view').style.display = 'block';
-    
-    const content = $('list-content');
-    content.innerHTML = ''; // クリア
-    
-    renderItems(db[catKey], content);
-    window.scrollTo(0, 0);
+// ─────────────────────────────────────────
+// LIST
+// ─────────────────────────────────────────
+function showList(catId){
+  curCat = DB.find(c=>c.id===catId);
+  prevView = 'view-home';
+  document.getElementById('list-icon').textContent = curCat.icon;
+  document.getElementById('list-title').textContent = curCat.name;
+  document.getElementById('search-input').value = '';
+  document.getElementById('head-title').textContent = curCat.name;
+  renderListItems(curCat.items);
+  switchView('view-list');
+  setNavActive('');
+}
+function renderListItems(items){
+  const count = items.length;
+  document.getElementById('list-count').textContent = `${count}項目`;
+  document.getElementById('list-body').innerHTML = items.map(item=>{
+    const isDone = done.has(String(item.no));
+    const tags = [...new Set(item.ops)].map(o=>`<div class="op-dot ${o}"></div>`).join('');
+    return `
+      <div class="item-card ${isDone?'item-done':''}" onclick="showDetail('${curCat.id}',${JSON.stringify(item.no)})">
+        <div class="item-no">No.${item.no}</div>
+        <div class="item-text">${item.t}</div>
+        <div class="op-tags">${tags}</div>
+        <div class="item-chk ${isDone?'done':''}"></div>
+        <div class="item-arrow">▶</div>
+      </div>
+    `;
+  }).join('') || '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">該当なし</div></div>';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('search-input').addEventListener('input',e=>{
+    const q = e.target.value.toLowerCase();
+    if(!curCat) return;
+    const filtered = curCat.items.filter(i=>
+      i.t.includes(q)||String(i.no).includes(q)||i.s.some(s=>s.m.includes(q))
+    );
+    renderListItems(filtered);
+  });
+});
+
+// ─────────────────────────────────────────
+// GLOBAL SEARCH
+// ─────────────────────────────────────────
+function showGlobalSearch(){
+  curCat = {id:'__search', name:'全体検索', items: DB.flatMap(c=>c.items)};
+  document.getElementById('list-icon').textContent = '🔍';
+  document.getElementById('list-title').textContent = '全項目検索';
+  document.getElementById('search-input').value = '';
+  document.getElementById('head-title').textContent = '全体検索';
+  renderListItems(curCat.items);
+  switchView('view-list');
+  setNavActive('nav-search');
+  setTimeout(()=>document.getElementById('search-input').focus(),100);
 }
 
-// アイテムのレンダリング（詳細手順を再現）
-function renderItems(items, container) {
-    items.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'item-card';
-        
-        let stepsHtml = '';
-        item.steps.forEach((s, idx) => {
-            let label, color;
-            if(s.t === 'R') { label = 'レジ'; color = 'b-r'; }
-            else if(s.t === 'J') { label = 'J-Mups端末'; color = 'b-j'; }
-            else { label = 'お客様/PayPay'; color = 'b-p'; }
-            
-            stepsHtml += `
-                <div class="step">
-                    <div class="step-num">${idx+1}</div>
-                    <div class="step-msg">
-                        <span class="badge ${color}">${label}</span><br>${s.m}
-                    </div>
-                </div>`;
-        });
-        
-        card.innerHTML = `
-            <div class="item-header">
-                <div class="item-no">研修項目 No.${item.no}</div>
-                <h3 class="item-title">${item.name}</h3>
-            </div>
-            <div class="item-steps">
-                ${stepsHtml}
-            </div>
-            <div class="note-box">
-                <strong>【備考・注意】</strong><br>${item.note}
-            </div>
-        `;
-        container.appendChild(card);
-    });
+// ─────────────────────────────────────────
+// DETAIL
+// ─────────────────────────────────────────
+function showDetail(catId, no){
+  const cat = DB.find(c=>c.id===catId) || DB.flatMap(c=>c).find(c=>c.id===catId);
+  const srcCat = catId==='__search' ? {items:DB.flatMap(c=>c.items)} : cat;
+  const item = srcCat.items.find(i=>i.no===no);
+  if(!item) return;
+  curNo = no;
+  const isDone = done.has(String(no));
+  prevView = 'view-list';
+
+  const badgeLabel = {R:'レジ操作',J:'J-Mups端末',P:'お客様/PayPay'};
+  const steps = item.s.map((s,i)=>`
+    <div class="step-item">
+      <div class="step-num">${i+1}</div>
+      <div class="step-body">
+        <div class="badge b-${s.h}">${badgeLabel[s.h]||s.h}</div>
+        <div class="step-text">${s.m}</div>
+      </div>
+      ${i<item.s.length-1?'<div class="step-connector"></div>':''}
+    </div>
+  `).join('');
+
+  const noteHtml = item.n ? `
+    <div class="note-box">
+      <div class="note-label">💡 備考・注意</div>
+      <div class="note-text">${item.n}</div>
+    </div>
+  ` : '';
+
+  // prev/next within category
+  const catForNav = catId==='__search' ? {items:DB.flatMap(c=>c.items)} : (cat||{items:[]});
+  const idx = catForNav.items.findIndex(i=>i.no===no);
+  const prev = catForNav.items[idx-1];
+  const next = catForNav.items[idx+1];
+
+  document.getElementById('det-body').innerHTML = `
+    <div class="det-header">
+      <div class="det-no">No.${item.no}</div>
+      <div class="det-title">${item.t}</div>
+    </div>
+    <div class="steps-container">${steps}</div>
+    ${noteHtml}
+    <button class="det-check-btn ${isDone?'done':'undone'}" onclick="toggleDone(${JSON.stringify(no)})">
+      ${isDone ? '✓ 完了済み（タップで未完了に）' : '○ 完了にする'}
+    </button>
+    <div class="det-nav">
+      ${prev?`<button class="det-nav-btn" onclick="showDetail('${catId}',${JSON.stringify(prev.no)})">◀ No.${prev.no}</button>`:'<div></div>'}
+      ${next?`<button class="det-nav-btn" onclick="showDetail('${catId}',${JSON.stringify(next.no)})">No.${next.no} ▶</button>`:'<div></div>'}
+    </div>
+  `;
+  document.getElementById('head-title').textContent = `No.${item.no} ${item.t}`;
+  switchView('view-det');
+  setNavActive('');
 }
 
-// 🔍 検索機能
-function toggleSearch() {
-    const searchCont = $('search-container');
-    if(searchCont.style.display === 'block') {
-        goHome();
-    } else {
-        setActiveNav('nav-search');
-        $('home-menu').style.display = 'none';
-        $('list-view').style.display = 'block';
-        searchCont.style.display = 'block';
-        $('search').focus();
-        $('list-content').innerHTML = ''; // 検索開始時は空
-    }
+// ─────────────────────────────────────────
+// PROGRESS VIEW
+// ─────────────────────────────────────────
+function showProgress(){
+  curCat = null;
+  switchView('view-home');
+  setNavActive('nav-prog');
+  document.getElementById('head-title').textContent = '進捗確認';
+  const total = totalItems();
+  const pct = total ? Math.round(done.size/total*100) : 0;
+
+  let html = `
+    <div class="progress-card">
+      <div class="progress-title">総合進捗 <span>${done.size} / ${total} (${pct}%)</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="section-hd">カテゴリ別進捗</div>
+  `;
+  DB.forEach(cat=>{
+    const catDone = cat.items.filter(i=>done.has(String(i.no))).length;
+    const catPct = cat.items.length ? Math.round(catDone/cat.items.length*100) : 0;
+    html += `
+      <div class="progress-card" style="margin-bottom:8px">
+        <div class="progress-title">
+          <span>${cat.icon} ${cat.name}</span>
+          <span>${catDone}/${cat.items.length} (${catPct}%)</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${catPct}%;background:linear-gradient(90deg,${cat.color},${cat.color}88)"></div></div>
+      </div>
+    `;
+  });
+  if(done.size>0){
+    html += `<button style="width:100%;margin-top:12px;padding:12px;border-radius:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;font-size:13px;cursor:pointer;font-family:'Noto Sans JP',sans-serif" onclick="if(confirm('進捗をリセットしますか？')){done.clear();saveDone();renderHome();}">進捗をリセット</button>`;
+  }
+  document.getElementById('view-home').innerHTML = html;
+  updateTotalProg();
 }
 
-function handleSearch() {
-    const q = $('search').value.toLowerCase();
-    const content = $('list-content');
-    content.innerHTML = ''; 
-    
-    if(!q) return;
-
-    let results = [];
-    Object.keys(db).forEach(cat => {
-        const matched = db[cat].filter(item => 
-            item.name.includes(q) || item.no.toString().includes(q)
-        );
-        results = results.concat(matched);
-    });
-    
-    if(results.length > 0) {
-        renderItems(results, content);
-    } else {
-        content.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">見つかりません</div>';
-    }
+// ─────────────────────────────────────────
+// TOGGLE DONE
+// ─────────────────────────────────────────
+function toggleDone(no){
+  const key = String(no);
+  if(done.has(key)) done.delete(key); else done.add(key);
+  saveDone();
+  updateTotalProg();
+  // re-render button
+  const btn = document.querySelector('.det-check-btn');
+  if(btn){
+    const isDone = done.has(key);
+    btn.className = `det-check-btn ${isDone?'done':'undone'}`;
+    btn.textContent = isDone ? '✓ 完了済み（タップで未完了に）' : '○ 完了にする';
+  }
 }
 
-// 初期化
-goHome();
+// ─────────────────────────────────────────
+// NAV / VIEW HELPERS
+// ─────────────────────────────────────────
+function switchView(id){
+  ['view-home','view-list','view-det'].forEach(v=>{
+    document.getElementById(v).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function setNavActive(id){
+  ['nav-home','nav-search','nav-back','nav-prog'].forEach(n=>{
+    document.getElementById(n).classList.toggle('active', n===id);
+  });
+}
+function goBack(){
+  const activeId = document.querySelector('.view.active').id;
+  if(activeId==='view-det'){
+    if(curCat && curCat.id!=='__search') showList(curCat.id);
+    else renderHome();
+  } else if(activeId==='view-list'){
+    renderHome();
+  } else {
+    renderHome();
+  }
+}
 
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+renderHome();
 </script>
 </body>
 </html>
