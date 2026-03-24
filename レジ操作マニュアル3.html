@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>レジ実務・片手ナビ (研修No.1-150)</title>
+    <style>
+        :root {
+            --primary: #2c3e50; --bg: #f0f3f5; --card: #ffffff;
+            --regi: #3498db; --jmups: #f39c12; --paypay: #ff0033;
+            --text-main: #333; --text-sub: #7f8c8d;
+            --nav-bg: #ffffff;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text-main); padding-bottom: 70px; /* ナビ用余白 */ overflow-x: hidden; }
+        
+        /* ヘッダー */
+        .header { background: var(--card); padding: 15px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 90; }
+        .header h1 { margin: 0; font-size: 17px; font-weight: bold; color: var(--primary); }
+        .header p { margin: 3px 0 0; font-size: 11px; color: var(--text-sub); }
+
+        /* コンテンツエリア */
+        .container { padding: 10px; }
+
+        /* 検索バー（上部固定だが、ナビで呼び出し） */
+        #search-container { display: none; padding: 10px; background: var(--bg); position: sticky; top: 55px; z-index: 80; }
+        #search { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 25px; box-sizing: border-box; font-size: 16px; outline: none; }
+
+        /* カテゴリパネル（ホーム画面） */
+        #home-menu { display: grid; grid-template-columns: 1fr; gap: 10px; padding-top: 10px; }
+        .menu-btn { background: var(--card); border: 1px solid #ddd; border-radius: 12px; padding: 20px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .menu-btn:active { background: #f8f9fa; transform: scale(0.98); }
+        .menu-btn-text { font-size: 16px; font-weight: bold; color: var(--primary); }
+        .menu-btn-icon { color: #ccc; font-size: 18px; }
+
+        /* アイテムリスト（詳細画面） */
+        #list-view { display: none; }
+        .item-card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .item-header { border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
+        .item-no { font-size: 11px; color: var(--text-sub); font-weight: bold; }
+        .item-title { font-size: 15px; font-weight: bold; color: var(--primary); margin: 3px 0 0; }
+
+        /* 手順の詳細表現（第1画面の良さを踏襲） */
+        .step { display: flex; align-items: flex-start; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #f0f0f0; }
+        .step:last-child { border-bottom: none; margin-bottom: 0; }
+        .step-num { background: var(--primary); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; margin-right: 10px; flex-shrink: 0; margin-top: 2px; }
+        
+        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; margin-bottom: 4px; }
+        .b-r { background: var(--regi); } .b-j { background: var(--jmups); } .b-p { background: var(--paypay); }
+        .step-msg { font-size: 14px; line-height: 1.5; flex: 1; }
+
+        .note-box { background: #fff9c4; border-left: 4px solid #fbc02d; padding: 10px; border-radius: 4px; font-size: 12px; margin-top: 10px; color: #555; }
+
+        /* 下部ナビゲーション（片手操作の中核） */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { text-align: center; color: var(--text-sub); flex: 1; padding: 10px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 20px; margin-bottom: 2px; font-style: normal; display: block; }
+        .nav-text { font-size: 10px; display: block; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>レジ操作実務ナビ</h1>
+    <p>全150研修項目・J-Mups対応完全版</p>
+</div>
+
+<div id="search-container">
+    <input type="text" id="search" placeholder="No.やキーワードで検索..." onkeyup="handleSearch()">
+</div>
+
+<div class="container">
+    <div id="home-menu">
+        <button class="menu-btn" onclick="showCategory('opening')">
+            <span class="menu-btn-text">☀️ 開局・閉局</span>
+            <span class="menu-btn-icon">▶</span>
+        </button>
+        <button class="menu-btn" onclick="showCategory('registration')">
+            <span class="menu-btn-text">🍎 商品登録・訂正</span>
+            <span class="menu-btn-icon">▶</span>
+        </button>
+        <button class="menu-btn" onclick="showCategory('payment')">
+            <span class="menu-btn-text">💳 会計・キャッシュレス</span>
+            <span class="menu-btn-icon">▶</span>
+        </button>
+        <button class="menu-btn" onclick="showCategory('return')">
+            <span class="menu-btn-text">🔄 返品・返金対応 (詳細)</span>
+            <span class="menu-btn-icon">▶</span>
+        </button>
+        <button class="menu-btn" onclick="showCategory('closing')">
+            <span class="menu-btn-text">🌙 点検・締め・その他</span>
+            <span class="menu-btn-icon">▶</span>
+        </button>
+    </div>
+
+    <div id="list-view">
+        <div id="list-content">
+            </div>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="goHome()">
+        <i class="nav-icon">🏠</i>
+        <span class="nav-text">ホーム</span>
+    </div>
+    <div class="nav-item" id="nav-return" onclick="showCategory('return')">
+        <i class="nav-icon">🔄</i>
+        <span class="nav-text">返品操作</span>
+    </div>
+    <div class="nav-item" id="nav-search" onclick="toggleSearch()">
+        <i class="nav-icon">🔍</i>
+        <span class="nav-text">検索</span>
+    </div>
+</div>
+
+<script>
+// PDF全150項目のエッセンスを詳細に再現したデータベース
+const db = {
+    // ☀️ 開局・閉局
+    opening: [
+        { no: 11, name: "自動開局(J-Mups端末)", steps: [
+            {t:"J", m:"画面が【POS連動中】であることを確認"},
+            {t:"J", m:"通信中表示中にレジ操作は絶対にしない（データ破損防止）"},
+            {t:"J", m:"【あり】だった場合の対応、釣銭入金時は端末画面を確認"}
+        ], note: "開局前に実施。日計票の出力有無を確認。" },
+        { no: 14, name: "レジ開局操作", steps: [
+            {t:"R", m:"レジキーを【R】へ回す"},
+            {t:"R", m:"L責任者No.を入力"},
+            {t:"R", m:"社員IDをスキャン"}
+        ], note: "正面レジは各フロア1本、コーナーレジは各レジ1本のキーを保管。" },
+        { no: 16, name: "レジ閉局操作", steps: [
+            {t:"R", m:"レジキーを【R】へ回す"},
+            {t:"R", m:"【閉局操作】を実行"}
+        ], note: "レジ離脱時は必ず実施。トレーニングモードも閉局してから行う。" }
+    ],
+    // 🍎 商品登録・訂正
+    registration: [
+        { no: 22, name: "年齢確認(酒・煙草)", steps: [
+            {t:"R", m:"商品をスキャン"},
+            {t:"R", m:"ディスプレイに年齢確認画面が表示"},
+            {t:"P", m:"お客様自身が画面の【OK】または【NG】を選択"},
+            {t:"R", m:"OKなら登録継続、NGなら販売不可"}
+        ], note: "酒・煙草販売時は必須。お客様に触れていただくこと。" },
+        { no: 33, name: "自動値引き(50円/30円シール)", steps: [
+            {t:"R", m:"商品登録（バーコードスキャン）"},
+            {t:"R", m:"画面下の【値引】ボタン(50円 or 30円)を押下"}
+        ], note: "自動値引きシール対応品のみ。" },
+        { no: 41, name: "指定取消(過去の登録)", steps: [
+            {t:"R", m:"登録済みリストから対象商品をタッチ"},
+            {t:"R", m:"【指定取消】ボタンを押下"}
+        ], note: "直前の商品だけでなく、過去に登録した特定の商品を消去可能。" },
+        { no: 43, name: "画面訂正(掛算登録)", steps: [
+            {t:"R", m:"画面の対象商品をタッチ"},
+            {t:"R", m:"【画面訂正】ボタンを押下"}
+        ], note: "掛算登録の場合、タッチした行の個数が全て取り消されるので注意。" }
+    ],
+    // 💳 会計・キャッシュレス
+    payment: [
+        { no: 87, name: "クレジット一括(磁気カード)", steps: [
+            {t:"R", m:"小計 → 【クレジット】ボタン押下"},
+            {t:"J", m:"端末画面確認後、カードをスリット"},
+            {t:"J", m:"【一括】 → 【確認】"},
+            {t:"J", m:"端末レシート出力後、レジレシートが出力"}
+        ], note: "10,001円以上はサイン必須。レジレシートは最後に出る。" },
+        { no: 92, name: "クレジット一括(ICカード)", steps: [
+            {t:"R", m:"小計 → 【クレジット】ボタン押下"},
+            {t:"J", m:"端末にICカードを挿入"},
+            {t:"J", m:"【一括】 → お客様が暗証番号入力 → 【確定】"},
+            {t:"J", m:"暗証番号不明時は【確定】ボタン押下でサイン対応へ"}
+        ], note: "暗証番号入力中は画面を見ないように配慮。" },
+        { no: 102, name: "PayPay決済", steps: [
+            {t:"P", m:"客：アプリ起動 → QRスキャン → お支払額入力 → 支払う"},
+            {t:"R", m:"小計 → 【PayPay】ボタン → レジとスマホの金額一致を確認"},
+            {t:"R", m:"決済完了音と画面の【決済完了】を確認"}
+        ], note: "お支払額は合計金額(税込)を入力して頂く。レジと一致を必ず確認。" }
+    ],
+    // 🔄 返品・返金対応 (第1画面の詳細さを再現)
+    return: [
+        { no: 116, name: "全返品(現金・一般)", steps: [
+            {t:"R", m:"【返品】 → 返品理由タッチ"},
+            {t:"R", m:"元レシートをスキャン"},
+            {t:"R", m:"【2(全返品)】 → 金額確認 → 【OK】 → 【小計】"},
+            {t:"R", m:"返金レシート出力 → ページ切替 → 【明細書】 → 返金レシートスキャン"},
+            {t:"R", m:"店舗用明細書を発行"}
+        ], note: "全額返金。レジ画面の金額と元レシートが一致しているか確認。" },
+        { no: 121, name: "取替(安い→高い商品へ)", steps: [
+            {t:"R", m:"【返品】 → 理由タッチ → レシートスキャン → 【OK】"},
+            {t:"R", m:"返品商品をタッチ → 【画面訂正】 → 【小計】"},
+            {t:"R", m:"取替商品をスキャン → 【預/金額】"}
+        ], note: "差額を頂く対応。" },
+        { no: 127, name: "レシートなし返品(99返品)", steps: [
+            {t:"R", m:"【返品】 → 理由タッチ → JAN【9999999】入力"},
+            {t:"R", m:"【小計】 → 返品商品をスキャン → 【預/現金】"}
+        ], note: "販売実績を調べてから行う。レシート代用伝票を使用。明細書の裏に元レジNo・日付等を記入。" },
+        { no: 129, name: "カード全返品(磁気)", steps: [
+            {t:"R", m:"【カード返品】 → 理由タッチ → レシートスキャン"},
+            {t:"R", m:"【2】 → 金額確認 → 【OK】"},
+            {t:"J", m:"端末画面確認後、カードをスリット"},
+            {t:"J", m:"伝票番号(J伝票No)入力 → 【次へ】 → 商品コード入力 → 【確認】"},
+            {t:"J", m:"端末レシート出力 → 金額一致を確認"}
+        ], note: "J-Mups側のレシートとレジ画面の金額が一致しているか必ず確認。" },
+        { no: 133, name: "カード一部返品(IC)", steps: [
+            {t:"R", m:"【カード返品】 → 理由タッチ → レシートスキャン → 金額 → 【OK】"},
+            {t:"R", m:"【明細書】発行 → 店舗用とする"},
+            {t:"J", m:"端末にICカードを挿入 → 伝票番号入力 → 商品コード入力"},
+            {t:"J", m:"支払方法【確認】 → レシート出力"},
+            {t:"R", m:"お客様の希望する会計方法で再度会計する"}
+        ], note: "ICカードは端末側で一部返品処理を行う。" },
+        { no: 136, name: "PayPay返金(ダッシュボード併用)", steps: [
+            {t:"P", m:"タブレット等でPayPayダッシュボードサイトを開く"},
+            {t:"P", m:"対象取引を探す → 【返金する】実行 → 【返金完了】確認"},
+            {t:"R", m:"レジ側：【カード返品】操作（全返品/一部返品）を行う"}
+        ], note: "ダッシュボードでは全額返金のみ可能。一部返金はレジ側で別途会計。" }
+    ],
+    // 🌙 点検・締め・その他
+    closing: [
+        { no: 145, name: "レジ締め(レジキー有・日計)", steps: [
+            {t:"R", m:"レジキーを【S(点検・集計)】へ回す"},
+            {t:"R", m:"責任者No.入力 → 【金額入力】 → 【全取引】"},
+            {t:"R", m:"【クレジット集計】"},
+            {t:"J", m:"J-Mups端末日計票出力 → 枚数確認（6枚）"},
+            {t:"R", m:"レジ側：【Zレシート】出力 → キーを【L】へ戻す"}
+        ], note: "カード会社控・加盟店控は専用袋にしまう。枚数カウント不要。" },
+        { no: 150, name: "トレーニングモード", steps: [
+            {t:"R", m:"レジ閉局状態にする"},
+            {t:"R", m:"責任者No未入力状態でページ切替 → 【練習モード】"},
+            {t:"R", m:"ディスプレイの色が緑色になる"},
+            {t:"J", m:"J-Mupsも連動して練習モードへ"}
+        ], note: "練習モード終了後は必ず閉局し、通常モードに戻すこと。" }
+    ]
+};
+
+// ユーティリティ
+const $ = (id) => document.getElementById(id);
+
+// ナビゲーション制御
+function setActiveNav(navId) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    $(navId).classList.add('active');
+}
+
+// 🏠 ホーム画面表示
+function goHome() {
+    setActiveNav('nav-home');
+    $('home-menu').style.display = 'grid';
+    $('list-view').style.display = 'none';
+    $('search-container').style.display = 'none';
+    window.scrollTo(0, 0);
+}
+
+// 📋 カテゴリ別のリスト表示
+function showCategory(catKey) {
+    if(catKey === 'return') setActiveNav('nav-return');
+    else setActiveNav('nav-home'); // 他のカテゴリはホーム経由の扱い
+    
+    $('home-menu').style.display = 'none';
+    $('search-container').style.display = 'none';
+    $('list-view').style.display = 'block';
+    
+    const content = $('list-content');
+    content.innerHTML = ''; // クリア
+    
+    renderItems(db[catKey], content);
+    window.scrollTo(0, 0);
+}
+
+// アイテムのレンダリング（詳細手順を再現）
+function renderItems(items, container) {
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        
+        let stepsHtml = '';
+        item.steps.forEach((s, idx) => {
+            let label, color;
+            if(s.t === 'R') { label = 'レジ'; color = 'b-r'; }
+            else if(s.t === 'J') { label = 'J-Mups端末'; color = 'b-j'; }
+            else { label = 'お客様/PayPay'; color = 'b-p'; }
+            
+            stepsHtml += `
+                <div class="step">
+                    <div class="step-num">${idx+1}</div>
+                    <div class="step-msg">
+                        <span class="badge ${color}">${label}</span><br>${s.m}
+                    </div>
+                </div>`;
+        });
+        
+        card.innerHTML = `
+            <div class="item-header">
+                <div class="item-no">研修項目 No.${item.no}</div>
+                <h3 class="item-title">${item.name}</h3>
+            </div>
+            <div class="item-steps">
+                ${stepsHtml}
+            </div>
+            <div class="note-box">
+                <strong>【備考・注意】</strong><br>${item.note}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// 🔍 検索機能
+function toggleSearch() {
+    const searchCont = $('search-container');
+    if(searchCont.style.display === 'block') {
+        goHome();
+    } else {
+        setActiveNav('nav-search');
+        $('home-menu').style.display = 'none';
+        $('list-view').style.display = 'block';
+        searchCont.style.display = 'block';
+        $('search').focus();
+        $('list-content').innerHTML = ''; // 検索開始時は空
+    }
+}
+
+function handleSearch() {
+    const q = $('search').value.toLowerCase();
+    const content = $('list-content');
+    content.innerHTML = ''; 
+    
+    if(!q) return;
+
+    let results = [];
+    Object.keys(db).forEach(cat => {
+        const matched = db[cat].filter(item => 
+            item.name.includes(q) || item.no.toString().includes(q)
+        );
+        results = results.concat(matched);
+    });
+    
+    if(results.length > 0) {
+        renderItems(results, content);
+    } else {
+        content.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">見つかりません</div>';
+    }
+}
+
+// 初期化
+goHome();
+
+</script>
+</body>
+</html>
