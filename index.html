@@ -2,120 +2,276 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d1520">
 <title>レジ研修ナビ 完全版</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* ─── CSS VARIABLES ─── */
 :root {
-  --bg:       #0d1520;
-  --bg2:      #111d2e;
-  --card:     #162032;
-  --card2:    #1c2a40;
-  --border:   #253650;
-  --text:     #c8d8e8;
-  --text2:    #7a94b0;
-  --text3:    #4a6480;
-  --amber:    #f0a500;
-  --amber2:   #ffc340;
-  --blue:     #3b82f6;
-  --blue2:    #60a5fa;
-  --red:      #ef4444;
-  --red2:     #f87171;
-  --green:    #10b981;
-  --green2:   #34d399;
-  --nav-h:    56px;
-  --nav-bot:  66px;
+  --nav-h: 56px;
+  --nav-bot: env(safe-area-inset-bottom, 20px) + 56px;
 }
+
+/* Dark Theme (default) */
+:root, [data-theme="dark"] {
+  --bg: #0d1520;
+  --bg2: #111d2e;
+  --card: #162032;
+  --card2: #1c2a40;
+  --border: #253650;
+  --text: #c8d8e8;
+  --text2: #7a94b0;
+  --text3: #4a6480;
+  --amber: #f0a500;
+  --amber2: #ffc340;
+  --blue: #3b82f6;
+  --blue2: #60a5fa;
+  --red: #ef4444;
+  --red2: #f87171;
+  --green: #10b981;
+  --green2: #34d399;
+  --shadow: rgba(0,0,0,0.4);
+  --header-bg: linear-gradient(135deg,#0a1628 0%,#162032 100%);
+  --nav-bg: rgba(13,21,32,0.95);
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --bg: #f5f7fa;
+  --bg2: #e8edf3;
+  --card: #ffffff;
+  --card2: #f8fafc;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --amber: #f59e0b;
+  --amber2: #fbbf24;
+  --blue: #3b82f6;
+  --blue2: #2563eb;
+  --red: #ef4444;
+  --red2: #dc2626;
+  --green: #10b981;
+  --green2: #059669;
+  --shadow: rgba(0,0,0,0.08);
+  --header-bg: linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);
+  --nav-bg: rgba(255,255,255,0.95);
+}
+
+/* Auto (system preference) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]):not([data-theme="light"]) {
+    --bg: #f5f7fa;
+    --bg2: #e8edf3;
+    --card: #ffffff;
+    --card2: #f8fafc;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text2: #64748b;
+    --text3: #94a3b8;
+    --header-bg: linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);
+    --nav-bg: rgba(255,255,255,0.95);
+    --shadow: rgba(0,0,0,0.08);
+  }
+}
+
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);padding-bottom:calc(var(--nav-bot) + 20px);min-height:100vh;}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding-bottom:var(--nav-bot);
+  min-height:100vh;
+  transition:background .3s,color .3s;
+}
 
 /* ─── HEADER ─── */
 .header{
-  background:linear-gradient(135deg,#0a1628 0%,#162032 100%);
+  background:var(--header-bg);
   border-bottom:1px solid var(--border);
-  padding:0 16px;
+  padding:0 12px;
   height:var(--nav-h);
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 20px rgba(0,0,0,0.4);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:200;
+  box-shadow:0 2px 10px var(--shadow);
+  transition:background .3s,border .3s;
 }
-.header-left{display:flex;align-items:center;gap:10px;}
-.header-logo{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:1px;opacity:.8;}
-#head-title{font-size:15px;font-weight:700;color:var(--text);}
+.header-left{display:flex;align-items:center;gap:8px;}
+.header-logo{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--amber);
+  letter-spacing:1px;
+  opacity:.8;
+}
+#head-title{
+  font-size:14px;
+  font-weight:700;
+  color:var(--text);
+}
 .progress-pill{
-  font-family:'JetBrains Mono',monospace;font-size:11px;
-  background:var(--card2);border:1px solid var(--border);
-  padding:4px 10px;border-radius:20px;color:var(--amber);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  background:var(--card2);
+  border:1px solid var(--border);
+  padding:4px 8px;
+  border-radius:16px;
+  color:var(--amber);
   white-space:nowrap;
 }
 
+/* Theme Toggle Button */
+.theme-toggle{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  border:none;
+  background:var(--card2);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  transition:all .2s;
+}
+.theme-toggle:active{transform:scale(.9);}
+.theme-toggle span{display:none;}
+[data-theme="dark"] .theme-toggle .moon{display:inline;}
+[data-theme="light"] .theme-toggle .sun{display:inline;}
+:root:not([data-theme="dark"]):not([data-theme="light"]) .theme-toggle .auto{display:inline;}
+
 /* ─── VIEWS ─── */
-.view{display:none;padding:12px;}
+.view{display:none;padding:12px;padding-top:16px;}
 .view.active{display:block;}
 
 /* ─── SEARCH ─── */
 .search-wrap{position:relative;margin-bottom:12px;}
-.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;}
+.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none;}
 #search-input{
-  width:100%;padding:12px 12px 12px 40px;
-  background:var(--card);border:1px solid var(--border);border-radius:10px;
-  color:var(--text);font-size:15px;font-family:'Noto Sans JP',sans-serif;
-  outline:none;transition:border .2s;
+  width:100%;
+  padding:14px 14px 14px 44px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--text);
+  font-size:16px;
+  font-family:'Noto Sans JP',sans-serif;
+  outline:none;
+  transition:border .2s,box-shadow .2s;
 }
-#search-input:focus{border-color:var(--amber);}
+#search-input:focus{
+  border-color:var(--amber);
+  box-shadow:0 0 0 3px rgba(240,165,0,.2);
+}
 #search-input::placeholder{color:var(--text3);}
 
 /* ─── CATEGORY CARDS ─── */
-.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-@media(max-width:360px){.cat-grid{grid-template-columns:1fr;}}
+.cat-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+@media(max-width:360px){
+  .cat-grid{grid-template-columns:1fr;}
+}
 .cat-card{
-  background:var(--card);border:1px solid var(--border);border-radius:14px;
-  padding:16px 14px;cursor:pointer;transition:all .15s;
-  display:flex;flex-direction:column;gap:8px;
-  position:relative;overflow:hidden;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px 14px;
+  cursor:pointer;
+  transition:all .15s;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  position:relative;
+  overflow:hidden;
+  touch-action:manipulation;
 }
 .cat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--cat-color,var(--amber));border-radius:14px 14px 0 0;
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:var(--cat-color,var(--amber));
+  border-radius:16px 16px 0 0;
 }
 .cat-card:active{transform:scale(.97);background:var(--card2);}
-.cat-icon{font-size:22px;line-height:1;}
-.cat-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;}
+.cat-icon{font-size:24px;line-height:1;}
+.cat-name{font-size:14px;font-weight:700;color:var(--text);line-height:1.3;}
 .cat-sub{font-size:10px;color:var(--text3);}
 .cat-meta{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
 .cat-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);}
-.cat-prog-bar{height:3px;background:var(--bg2);border-radius:2px;margin-top:4px;}
+.cat-prog-bar{height:4px;background:var(--bg2);border-radius:2px;margin-top:6px;}
 .cat-prog-fill{height:100%;border-radius:2px;background:var(--cat-color,var(--amber));transition:width .3s;}
 
 /* ─── LIST ─── */
-.list-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.list-header{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
 .list-header-icon{font-size:20px;}
-.list-header-title{font-size:14px;font-weight:700;}
+.list-header-title{font-size:15px;font-weight:700;}
 .list-header-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);}
 
 .item-card{
-  background:var(--card);border:1px solid var(--border);border-radius:10px;
-  margin-bottom:8px;display:flex;align-items:center;gap:12px;padding:13px 14px;
-  cursor:pointer;transition:all .15s;position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 12px;
+  cursor:pointer;
+  transition:all .15s;
+  position:relative;
+  touch-action:manipulation;
 }
 .item-card:active{transform:scale(.98);background:var(--card2);}
-.item-done{opacity:.45;}
+.item-done{opacity:.4;}
 .item-done .item-text{text-decoration:line-through;}
 .item-no{
-  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
-  min-width:36px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;
-  background:var(--bg2);color:var(--text2);border:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:700;
+  min-width:38px;
+  height:26px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg2);
+  color:var(--text2);
+  border:1px solid var(--border);
   flex-shrink:0;
 }
-.item-text{font-size:13.5px;flex:1;line-height:1.3;}
+.item-text{font-size:14px;flex:1;line-height:1.4;}
 .item-chk{
-  width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  border:2px solid var(--border);
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   transition:all .2s;
 }
 .item-chk.done{background:var(--green);border-color:var(--green);}
-.item-chk.done::after{content:'✓';font-size:11px;color:white;font-weight:700;}
+.item-chk.done::after{content:'✓';font-size:12px;color:#fff;font-weight:700;}
 .item-arrow{color:var(--text3);font-size:12px;flex-shrink:0;}
 
 /* ─── DETAIL ─── */
@@ -123,79 +279,171 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .det-no{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);margin-bottom:6px;letter-spacing:1px;}
 .det-title{font-size:20px;font-weight:700;line-height:1.3;}
 
-.steps-container{display:flex;flex-direction:column;gap:2px;margin-bottom:20px;}
-.step-item{
-  display:flex;gap:12px;padding:14px;
-  background:var(--card);border:1px solid var(--border);
-  position:relative;
+.steps-container{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-bottom:20px;
 }
-.step-item:first-child{border-radius:12px 12px 0 0;}
-.step-item:last-child{border-radius:0 0 12px 12px;}
-.step-item:only-child{border-radius:12px;}
+.step-item{
+  display:flex;
+  gap:12px;
+  padding:14px;
+  background:var(--card);
+  border:1px solid var(--border);
+  position:relative;
+  transition:background .2s;
+}
+.step-item:active{background:var(--card2);}
+.step-item:first-child{border-radius:14px 14px 0 0;}
+.step-item:last-child{border-radius:0 0 14px 14px;}
+.step-item:only-child{border-radius:14px;}
 .step-connector{
-  position:absolute;left:34px;bottom:-2px;width:2px;height:4px;
-  background:var(--border);z-index:1;
+  position:absolute;
+  left:34px;
+  bottom:-2px;
+  width:2px;
+  height:4px;
+  background:var(--border);
+  z-index:1;
 }
 .step-item:last-child .step-connector{display:none;}
 .step-num{
-  width:22px;height:22px;border-radius:50%;
-  background:var(--bg2);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);
-  flex-shrink:0;margin-top:1px;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text2);
+  flex-shrink:0;
+  margin-top:1px;
 }
 .step-body{flex:1;}
 .badge{
-  display:inline-flex;align-items:center;gap:4px;
-  font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;
-  margin-bottom:6px;letter-spacing:.5px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:10px;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:6px;
+  margin-bottom:8px;
+  letter-spacing:.5px;
 }
-.b-R{background:rgba(59,130,246,.15);color:var(--blue2);border:1px solid rgba(59,130,246,.3);}
-.b-J{background:rgba(240,165,0,.12);color:var(--amber2);border:1px solid rgba(240,165,0,.25);}
-.b-P{background:rgba(239,68,68,.12);color:var(--red2);border:1px solid rgba(239,68,68,.25);}
-.step-text{font-size:13.5px;line-height:1.6;color:var(--text);}
-.step-arrow{
-  display:inline-flex;align-items:center;gap:3px;
-  color:var(--text2);font-size:12px;
+.b-R{
+  background:rgba(59,130,246,.15);
+  color:var(--blue2);
+  border:1px solid rgba(59,130,246,.3);
 }
-.step-arrow span{color:var(--amber);font-weight:700;}
+.b-J{
+  background:rgba(240,165,0,.12);
+  color:var(--amber2);
+  border:1px solid rgba(240,165,0,.25);
+}
+.b-P{
+  background:rgba(239,68,68,.12);
+  color:var(--red2);
+  border:1px solid rgba(239,68,68,.25);
+}
+.step-text{font-size:14px;line-height:1.7;color:var(--text);}
 
 .note-box{
-  background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);
-  border-radius:10px;padding:14px;
+  background:rgba(240,165,0,.08);
+  border:1px solid rgba(240,165,0,.25);
+  border-radius:12px;
+  padding:14px;
 }
 .note-label{font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:4px;}
-.note-text{font-size:12.5px;line-height:1.7;color:var(--text2);}
+.note-text{font-size:13px;line-height:1.7;color:var(--text2);}
 
 .det-nav{display:flex;gap:8px;margin-top:20px;}
 .det-nav-btn{
-  flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);
-  background:var(--card);color:var(--text2);font-size:13px;cursor:pointer;
-  text-align:center;transition:all .15s;font-family:'Noto Sans JP',sans-serif;
-}
-.det-nav-btn:active{background:var(--card2);}
-.det-check-btn{
-  width:100%;margin-top:12px;padding:14px;border-radius:10px;border:none;
-  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text2);
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  text-align:center;
+  transition:all .15s;
   font-family:'Noto Sans JP',sans-serif;
+  touch-action:manipulation;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-.det-check-btn.undone{background:rgba(16,185,129,.1);color:var(--green2);border:1px solid rgba(16,185,129,.3);}
-.det-check-btn.done{background:rgba(16,185,129,.25);color:var(--green2);border:1px solid var(--green);}
+.det-nav-btn:active{background:var(--card2);transform:scale(.97);}
+.det-check-btn{
+  width:100%;
+  margin-top:12px;
+  padding:16px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  font-family:'Noto Sans JP',sans-serif;
+  min-height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  touch-action:manipulation;
+}
+.det-check-btn.undone{
+  background:rgba(16,185,129,.12);
+  color:var(--green2);
+  border:1px solid rgba(16,185,129,.3);
+}
+.det-check-btn.done{
+  background:rgba(16,185,129,.25);
+  color:var(--green2);
+  border:1px solid var(--green);
+}
 
 /* ─── NAV BAR ─── */
 .nav-bar{
-  position:fixed;bottom:0;left:0;right:0;
-  height:var(--nav-bot);
-  background:rgba(13,21,32,.95);
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:calc(56px + env(safe-area-inset-bottom));
+  background:var(--nav-bg);
   border-top:1px solid var(--border);
-  backdrop-filter:blur(10px);
-  display:flex;z-index:200;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  display:flex;
+  z-index:200;
   padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+  transition:background .3s,border .3s;
 }
 .nav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;font-size:10px;color:var(--text3);cursor:pointer;transition:color .15s;
-  border:none;background:none;font-family:'Noto Sans JP',sans-serif;padding:0;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  font-size:10px;
+  color:var(--text3);
+  cursor:pointer;
+  transition:color .15s;
+  border:none;
+  background:none;
+  font-family:'Noto Sans JP',sans-serif;
+  padding:8px 0;
+  min-height:44px;
 }
 .nav-btn.active{color:var(--amber);}
 .nav-btn svg{transition:transform .15s;}
@@ -203,16 +451,42 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 /* ─── PROGRESS CARD ─── */
 .progress-card{
-  background:var(--card);border:1px solid var(--border);border-radius:14px;
-  padding:16px;margin-bottom:12px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:12px;
 }
-.progress-title{font-size:12px;color:var(--text2);margin-bottom:10px;display:flex;justify-content:space-between;}
+.progress-title{
+  font-size:12px;
+  color:var(--text2);
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+}
 .progress-title span{font-family:'JetBrains Mono',monospace;color:var(--amber);}
-.progress-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;}
-.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--green2));transition:width .5s;}
+.progress-bar{
+  height:8px;
+  background:var(--bg2);
+  border-radius:4px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  border-radius:4px;
+  background:linear-gradient(90deg,var(--green),var(--green2));
+  transition:width .5s;
+}
 
 /* ─── SECTION HEADER ─── */
-.section-hd{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:16px 0 8px;}
+.section-hd{
+  font-size:10px;
+  font-weight:700;
+  color:var(--text3);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  padding:16px 0 8px;
+}
 
 /* ─── EMPTY STATE ─── */
 .empty{text-align:center;padding:60px 20px;color:var(--text3);}
@@ -220,8 +494,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .empty-text{font-size:14px;}
 
 /* ─── BADGE DOTS IN LIST ─── */
-.op-tags{display:flex;gap:3px;margin-left:auto;margin-right:6px;}
-.op-dot{width:6px;height:6px;border-radius:50%;}
+.op-tags{display:flex;gap:4px;margin-left:auto;margin-right:6px;}
+.op-dot{width:7px;height:7px;border-radius:50%;}
 .op-dot.R{background:var(--blue);}
 .op-dot.J{background:var(--amber);}
 .op-dot.P{background:var(--red);}
@@ -232,8 +506,30 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
 /* ─── FADE IN ─── */
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.view.active{animation:fadeIn .18s ease-out;}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+.view.active{animation:fadeIn .2s ease-out;}
+
+/* ─── SWIPE INDICATOR ─── */
+.swipe-hint{
+  position:fixed;
+  bottom:calc(66px + env(safe-area-inset-bottom));
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:6px 14px;
+  font-size:11px;
+  color:var(--text2);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .3s;
+  z-index:150;
+}
+.swipe-hint.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -243,7 +539,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="header-logo">REG</div>
     <div id="head-title">レジ研修ナビ</div>
   </div>
-  <div class="progress-pill" id="total-prog">0 / 0</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="progress-pill" id="total-prog">0 / 0</div>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="テーマ切り替え">
+      <span class="moon">🌙</span>
+      <span class="sun">☀️</span>
+      <span class="auto">🌓</span>
+    </button>
+  </div>
 </div>
 
 <div id="view-home" class="view active"></div>
@@ -255,7 +558,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
   <div class="search-wrap">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="search-input" placeholder="No. またはキーワードで検索">
+    <input type="search" id="search-input" placeholder="No. またはキーワードで検索" enterkeyhint="search">
   </div>
   <div id="list-body"></div>
 </div>
@@ -263,31 +566,62 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div id="det-body"></div>
 </div>
 
+<div class="swipe-hint" id="swipe-hint">← スワイプで前/次へ →</div>
+
 <nav class="nav-bar">
   <button class="nav-btn active" id="nav-home" onclick="renderHome()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    ホーム
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>ホーム</span>
   </button>
   <button class="nav-btn" id="nav-search" onclick="showGlobalSearch()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    検索
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <span>検索</span>
   </button>
   <button class="nav-btn" id="nav-back" onclick="goBack()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-    戻る
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    <span>戻る</span>
   </button>
   <button class="nav-btn" id="nav-prog" onclick="showProgress()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    進捗
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>進捗</span>
   </button>
 </nav>
 
 <script>
 // ─────────────────────────────────────────
+// THEME MANAGEMENT
+// ─────────────────────────────────────────
+function initTheme(){
+  const saved = localStorage.getItem('reg_theme');
+  if(saved==='dark'||saved==='light'){
+    document.documentElement.setAttribute('data-theme',saved);
+  }
+  updateMetaTheme();
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current==='dark'?'light':current==='light'?null:'dark';
+  if(next){
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem('reg_theme',next);
+  }else{
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.removeItem('reg_theme');
+  }
+  updateMetaTheme();
+}
+function updateMetaTheme(){
+  const isDark = !document.documentElement.getAttribute('data-theme')||
+                 document.documentElement.getAttribute('data-theme')==='dark';
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const finalDark = isDark===null?prefersDark:isDark==='dark';
+  document.querySelector('meta[name="theme-color"]').setAttribute('content',finalDark?'#0d1520':'#f5f7fa');
+}
+
+// ─────────────────────────────────────────
 // FULL DATABASE - All 150+ items from PDF
 // ─────────────────────────────────────────
-const DB = [
-{
+const DB = [{
   id:'cat1', icon:'🟦', color:'#3b82f6', name:'基礎・開局・登録',
   sub:'No.1–24 / P.1', range:'1-24',
   items:[
@@ -322,8 +656,7 @@ const DB = [
     {no:23, t:'明細画面・PLU画面', ops:['R'], s:[{h:'R',m:'固定画面 → [PLU画面へ] をタッチ'}], n:''},
     {no:24, t:'JAN登録', ops:['R'], s:[{h:'R',m:'固定画面 → JANコードを入力'}], n:''},
   ]
-},
-{
+},{
   id:'cat2', icon:'🟨', color:'#f0a500', name:'スキャン・割引・訂正',
   sub:'No.25–48 / P.2', range:'25-48',
   items:[
@@ -356,8 +689,7 @@ const DB = [
     {no:47, t:'小計', ops:['R'], s:[{h:'R',m:'商品登録終了 → 小計'}], n:'小計後でも追加登録可能（再度[小計]を押す）'},
     {no:48, t:'転送', ops:['R'], s:[{h:'R',m:'商品登録終了 → 小計 → 転送'}], n:'転送後の追加登録はレジ本体で行う'},
   ]
-},
-{
+},{
   id:'cat3', icon:'🔵', color:'#06b6d4', name:'呼出・追加・操作補足',
   sub:'No.49–71 / P.3', range:'49-71',
   items:[
@@ -385,8 +717,7 @@ const DB = [
     {no:70, t:'一括取消(呼出後)', ops:['R'], s:[{h:'R',m:'商品登録終了 → 一括取消'}], n:'小計後でも追加登録可能'},
     {no:71, t:'登録内容の確認(呼出後)', ops:['R'], s:[{h:'R',m:'△/▽ → 確認 → 小計'}], n:''},
   ]
-},
-{
+},{
   id:'cat4', icon:'💴', color:'#10b981', name:'会計・金券・磁気カード',
   sub:'No.72–91 / P.4', range:'72-91',
   items:[
@@ -423,8 +754,7 @@ const DB = [
     {no:90, t:'ボーナス(オリコ・ライフ)', ops:['J'], s:[{h:'J',m:'カードスリット → ボーナス → ボーナス → リボ → 次へ → レシート出力'}], n:''},
     {no:91, t:'リボ', ops:['J'], s:[{h:'J',m:'カードスリット → リボ → 次へ → レシート出力'}], n:''},
   ]
-},
-{
+},{
   id:'cat5', icon:'💳', color:'#8b5cf6', name:'IC・PayPay・領収証・仮締め',
   sub:'No.92–110 / P.5', range:'92-110',
   items:[
@@ -457,8 +787,7 @@ const DB = [
     {no:109, t:'仮締め(固定式スキャナー)', ops:['R'], s:[{h:'R',m:'仮締め → 金額 → 仮締め → 商品登録 → 小計'}], n:'ディスプレイに[仮締め中]と表示される'},
     {no:110, t:'仮締め会計(レジ本体)', ops:['R'], s:[{h:'R',m:'仮締め会計 → 小計 → 会計 → 預/現金'}], n:'【仮締め会計】で呼び出した後、追加登録・商品取消後でも追加登録可能'},
   ]
-},
-{
+},{
   id:'cat6', icon:'🔄', color:'#f59e0b', name:'加算・返品基本',
   sub:'No.111–121 / P.6', range:'111-121',
   items:[
@@ -502,8 +831,7 @@ const DB = [
       {h:'R',m:'返品商品登録 → 金額 → OK → 追加登録'}
     ], n:'追加登録が可能'},
   ]
-},
-{
+},{
   id:'cat7', icon:'↩️', color:'#ec4899', name:'返品応用・カード返品前確認',
   sub:'No.122–129 / P.7', range:'122-129',
   items:[
@@ -538,8 +866,7 @@ const DB = [
       {h:'J',m:'カードスリット → 伝票番号(J伝票No)入力 → 確認 → 明細書'}
     ], n:'金額一致を必ず確認。カード会社控にはサイン必須'},
   ]
-},
-{
+},{
   id:'cat8', icon:'💎', color:'#14b8a6', name:'磁気・ICカード返品操作',
   sub:'No.130–134 / P.8', range:'130-134',
   items:[
@@ -568,8 +895,7 @@ const DB = [
       {h:'R',m:'商品登録 → 会計操作 → 小計'}
     ], n:'お客様が希望する会計方法で再度会計する(クレジットカード・現金・PayPay他)'},
   ]
-},
-{
+},{
   id:'cat9', icon:'📱', color:'#ef4444', name:'PayPay返品・近電・特殊操作',
   sub:'No.135–142 / P.9', range:'135-142',
   items:[
@@ -606,8 +932,7 @@ const DB = [
       {h:'R',m:'お客様の操作 → 確認'}
     ], n:'※インプリンターや決済できないカードが決済できない場合やカード現地発生物などに使用する'},
   ]
-},
-{
+},{
   id:'cat10', icon:'🔧', color:'#6366f1', name:'装備・ジャーナル・Xレシート',
   sub:'No.143–149 / P.9後半', range:'143-149',
   items:[
@@ -631,8 +956,7 @@ const DB = [
       {h:'R',m:'閉局状態でページ切替 → 【練習モード】'}
     ], n:'画面が緑色に変化。J-Mupsも連動'},
   ]
-},
-{
+},{
   id:'cat11', icon:'📋', color:'#84cc16', name:'その他研修項目(FDチェックリスト)',
   sub:'P.11 / 追加23項目', range:'別枠',
   items:[
@@ -660,16 +984,17 @@ const DB = [
     {no:'FD-22', t:'出庫・会計の流れ', ops:['R'], s:[{h:'R',m:'出庫・会計の流れを習得する'}], n:''},
     {no:'FD-23', t:'シールタイプ防犯タグ', ops:['R'], s:[{h:'R',m:'シールタイプ防犯タグの解除方法を習得する'}], n:''},
   ]
-}
-];
+}];
 
 // ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
 let done = new Set(JSON.parse(localStorage.getItem('reg_done')||'[]'));
 let curCat = null;
-let curNo  = null;
+let curNo = null;
 let prevView = 'view-home';
+let curCatId = null;
+let curIdx = -1;
 
 function saveDone(){localStorage.setItem('reg_done',JSON.stringify([...done]));}
 function totalItems(){return DB.reduce((a,c)=>a+c.items.length,0);}
@@ -684,6 +1009,7 @@ function renderHome(){
   switchView('view-home');
   setNavActive('nav-home');
   document.getElementById('head-title').textContent = 'レジ研修ナビ';
+  hideSwipeHint();
 
   const total = totalItems();
   const pct = total ? Math.round(done.size/total*100) : 0;
@@ -723,6 +1049,7 @@ function renderHome(){
 // ─────────────────────────────────────────
 function showList(catId){
   curCat = DB.find(c=>c.id===catId);
+  curCatId = catId;
   prevView = 'view-home';
   document.getElementById('list-icon').textContent = curCat.icon;
   document.getElementById('list-title').textContent = curCat.name;
@@ -731,6 +1058,7 @@ function showList(catId){
   renderListItems(curCat.items);
   switchView('view-list');
   setNavActive('');
+  hideSwipeHint();
 }
 function renderListItems(items){
   const count = items.length;
@@ -739,7 +1067,7 @@ function renderListItems(items){
     const isDone = done.has(String(item.no));
     const tags = [...new Set(item.ops)].map(o=>`<div class="op-dot ${o}"></div>`).join('');
     return `
-      <div class="item-card ${isDone?'item-done':''}" onclick="showDetail('${curCat.id}',${JSON.stringify(item.no)})">
+      <div class="item-card ${isDone?'item-done':''}" onclick="showDetail('${curCat?.id||'__search'}',${JSON.stringify(item.no)})">
         <div class="item-no">No.${item.no}</div>
         <div class="item-text">${item.t}</div>
         <div class="op-tags">${tags}</div>
@@ -750,11 +1078,12 @@ function renderListItems(items){
   }).join('') || '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">該当なし</div></div>';
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('search-input').addEventListener('input',e=>{
+  const searchInput = document.getElementById('search-input');
+  searchInput.addEventListener('input',e=>{
     const q = e.target.value.toLowerCase();
     if(!curCat) return;
     const filtered = curCat.items.filter(i=>
-      i.t.includes(q)||String(i.no).includes(q)||i.s.some(s=>s.m.includes(q))
+      i.t.toLowerCase().includes(q)||String(i.no).includes(q)||i.s.some(s=>s.m.toLowerCase().includes(q))
     );
     renderListItems(filtered);
   });
@@ -765,6 +1094,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 // ─────────────────────────────────────────
 function showGlobalSearch(){
   curCat = {id:'__search', name:'全体検索', items: DB.flatMap(c=>c.items)};
+  curCatId = '__search';
   document.getElementById('list-icon').textContent = '🔍';
   document.getElementById('list-title').textContent = '全項目検索';
   document.getElementById('search-input').value = '';
@@ -773,17 +1103,21 @@ function showGlobalSearch(){
   switchView('view-list');
   setNavActive('nav-search');
   setTimeout(()=>document.getElementById('search-input').focus(),100);
+  hideSwipeHint();
 }
 
 // ─────────────────────────────────────────
 // DETAIL
 // ─────────────────────────────────────────
 function showDetail(catId, no){
-  const cat = DB.find(c=>c.id===catId) || DB.flatMap(c=>c).find(c=>c.id===catId);
+  const cat = DB.find(c=>c.id===catId);
   const srcCat = catId==='__search' ? {items:DB.flatMap(c=>c.items)} : cat;
   const item = srcCat.items.find(i=>i.no===no);
   if(!item) return;
+
+  curCatId = catId;
   curNo = no;
+  curIdx = srcCat.items.findIndex(i=>i.no===no);
   const isDone = done.has(String(no));
   prevView = 'view-list';
 
@@ -806,11 +1140,8 @@ function showDetail(catId, no){
     </div>
   ` : '';
 
-  // prev/next within category
-  const catForNav = catId==='__search' ? {items:DB.flatMap(c=>c.items)} : (cat||{items:[]});
-  const idx = catForNav.items.findIndex(i=>i.no===no);
-  const prev = catForNav.items[idx-1];
-  const next = catForNav.items[idx+1];
+  const prev = srcCat.items[curIdx-1];
+  const next = srcCat.items[curIdx+1];
 
   document.getElementById('det-body').innerHTML = `
     <div class="det-header">
@@ -830,6 +1161,66 @@ function showDetail(catId, no){
   document.getElementById('head-title').textContent = `No.${item.no} ${item.t}`;
   switchView('view-det');
   setNavActive('');
+
+  // Show swipe hint on detail view
+  if(prev||next) showSwipeHint();
+  else hideSwipeHint();
+
+  setupSwipeGestures(catId);
+}
+
+// ─────────────────────────────────────────
+// SWIPE GESTURES
+// ─────────────────────────────────────────
+let touchStartX = 0;
+let touchEndX = 0;
+
+function setupSwipeGestures(catId){
+  const view = document.getElementById('view-det');
+  view.removeEventListener('touchstart', handleTouchStart);
+  view.removeEventListener('touchend', handleTouchEnd);
+  view.addEventListener('touchstart', handleTouchStart, {passive:true});
+  view.addEventListener('touchend', handleTouchEnd, {passive:true});
+}
+
+function handleTouchStart(e){
+  touchStartX = e.changedTouches[0].screenX;
+}
+
+function handleTouchEnd(e){
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+}
+
+function handleSwipe(){
+  const swipeThreshold = 80;
+  const diff = touchStartX - touchEndX;
+
+  if(Math.abs(diff) < swipeThreshold) return;
+
+  const cat = curCatId==='__search' ? {items:DB.flatMap(c=>c.items)} : DB.find(c=>c.id===curCatId);
+  if(!cat) return;
+
+  if(diff > 0 && curIdx < cat.items.length - 1){
+    // Swipe left - next item
+    const next = cat.items[curIdx+1];
+    if(next) showDetail(curCatId, next.no);
+  }else if(diff < 0 && curIdx > 0){
+    // Swipe right - previous item
+    const prev = cat.items[curIdx-1];
+    if(prev) showDetail(curCatId, prev.no);
+  }
+}
+
+function showSwipeHint(){
+  const hint = document.getElementById('swipe-hint');
+  if(hint) hint.classList.add('show');
+  setTimeout(hideSwipeHint, 3000);
+}
+
+function hideSwipeHint(){
+  const hint = document.getElementById('swipe-hint');
+  if(hint) hint.classList.remove('show');
 }
 
 // ─────────────────────────────────────────
@@ -840,6 +1231,8 @@ function showProgress(){
   switchView('view-home');
   setNavActive('nav-prog');
   document.getElementById('head-title').textContent = '進捗確認';
+  hideSwipeHint();
+
   const total = totalItems();
   const pct = total ? Math.round(done.size/total*100) : 0;
 
@@ -864,7 +1257,7 @@ function showProgress(){
     `;
   });
   if(done.size>0){
-    html += `<button style="width:100%;margin-top:12px;padding:12px;border-radius:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;font-size:13px;cursor:pointer;font-family:'Noto Sans JP',sans-serif" onclick="if(confirm('進捗をリセットしますか？')){done.clear();saveDone();renderHome();}">進捗をリセット</button>`;
+    html += `<button style="width:100%;margin-top:12px;padding:14px;border-radius:12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red2);font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans JP',sans-serif;touch-action:manipulation;min-height:48px;" onclick="if(confirm('進捗をリセットしますか？')){done.clear();saveDone();renderHome();}">進捗をリセット</button>`;
   }
   document.getElementById('view-home').innerHTML = html;
   updateTotalProg();
@@ -878,7 +1271,6 @@ function toggleDone(no){
   if(done.has(key)) done.delete(key); else done.add(key);
   saveDone();
   updateTotalProg();
-  // re-render button
   const btn = document.querySelector('.det-check-btn');
   if(btn){
     const isDone = done.has(key);
@@ -905,11 +1297,11 @@ function setNavActive(id){
 function goBack(){
   const activeId = document.querySelector('.view.active').id;
   if(activeId==='view-det'){
-    if(curCat && curCat.id!=='__search') showList(curCat.id);
+    if(curCatId && curCatId!=='__search') showList(curCatId);
     else renderHome();
-  } else if(activeId==='view-list'){
+  }else if(activeId==='view-list'){
     renderHome();
-  } else {
+  }else{
     renderHome();
   }
 }
@@ -917,6 +1309,8 @@ function goBack(){
 // ─────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────
+initTheme();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',updateMetaTheme);
 renderHome();
 </script>
 </body>
