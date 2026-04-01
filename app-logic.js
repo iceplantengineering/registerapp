@@ -46,7 +46,7 @@ function renderListItems(items) {
     document.getElementById('list-body').innerHTML = items.map(item => {
         const tags = [...new Set(item.ops)].map(o => `<div class="op-dot ${o}"></div>`).join('');
         return `
-      <div class="item-card" onclick="showDetail('${curCat?.id || '__search'}',${JSON.stringify(item.no)})">
+      <div class="item-card" onclick="showDetail('${curCat?.id || '__search'}',${typeof item.no==='number'?item.no:"'"+item.no.replace(/'/g,"\\'")+"'"})">
         <div class="item-no">No.${item.no}</div>
         <div class="item-text">${item.t}</div>
         <div class="op-tags">${tags}</div>
@@ -83,13 +83,13 @@ function showGlobalSearch() {
 function showDetail(catId, no) {
     const cat = DB.find(c => c.id === catId);
     const srcCat = catId === '__search' ? { items: DB.flatMap(c => c.items) } : cat;
-    const item = srcCat.items.find(i => i.no === no);
+    const item = srcCat.items.find(i => i.no == no);
     if (!item) return;
 
-    curCatId = catId; curNo = no;
-    curIdx = srcCat.items.findIndex(i => i.no === no);
+    curCatId = catId; curNo = item.no;
+    curIdx = srcCat.items.findIndex(i => i.no == no);
 
-    const badgeLabel = { R: 'レジ操作', J: 'J-Mups端末', P: 'お客様/PayPay' };
+    const badgeLabel = { R: 'レジ操作', J: 'J-Mups端末', P: 'お客様/PayPay', T: 'タブレット・PC' };
     const steps = item.s.map((s, i) => `
     <div class="step-item">
       <div class="step-num">${i + 1}</div>
@@ -117,8 +117,8 @@ function showDetail(catId, no) {
     <div class="steps-container">${steps}</div>
     ${noteHtml}
     <div class="det-nav">
-      ${prev ? `<button class="det-nav-btn" onclick="showDetail('${catId}',${JSON.stringify(prev.no)})">◀ No.${prev.no}</button>` : '<div></div>'}
-      ${next ? `<button class="det-nav-btn" onclick="showDetail('${catId}',${JSON.stringify(next.no)})">No.${next.no} ▶</button>` : '<div></div>'}
+      ${prev ? `<button class="det-nav-btn" onclick="showDetail('${catId}',${typeof prev.no==='number'?prev.no:"'"+prev.no.replace(/'/g,"\\'")+"'"})">◀ No.${prev.no}</button>` : '<div></div>'}
+      ${next ? `<button class="det-nav-btn" onclick="showDetail('${catId}',${typeof next.no==='number'?next.no:"'"+next.no.replace(/'/g,"\\'")+"'"})">No.${next.no} ▶</button>` : '<div></div>'}
     </div>`;
     document.getElementById('head-title').textContent = `No.${item.no} ${item.t}`;
     switchView('view-det'); setNavActive('');
